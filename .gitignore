@@ -1,0 +1,9 @@
+local_research/
+
+# Local application state and operating-system metadata
+.claudian/
+.gstack/
+.DS_Store
+
+# Isolated implementation worktrees
+.worktrees/
