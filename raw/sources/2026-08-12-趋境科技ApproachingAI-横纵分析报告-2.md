@@ -1,0 +1,179 @@
+# 趋境科技 ApproachingAI 横纵分析报告
+
+> Source: 本地横纵研究报告 `横纵研究报告/趋境科技ApproachingAI_横纵分析报告.md`
+> Collected: 2026-08-12
+> Published: 2026-08-09
+
+---
+
+# 北京趋境科技有限责任公司（Approaching.AI／趋境科技）横纵分析报告
+
+> 研究对象：**北京趋境科技有限责任公司**（下称“目标法人”）；Approaching.AI／趋境科技仅作为其官网使用的品牌。  
+> 研究截止日：2026-08-09｜研究类型：单公司横纵研究  
+> 分类建议：**主分类 4.3 推理跨 XPU 异构调度；副分类 4.2 推理 PD 分离、4.4 多厂商算力池。** 不建议纳入 4.1 跨厂商训推算力调度平台。
+
+## 结论先行
+
+**唯一主体结论。** 本报告只研究北京趋境科技有限责任公司。官网“企业介绍”直接以该法人的全称描述 Token 服务、Token System 与 Token Machine，足以将当前官网产品叙事归于该法人；但公开材料未提供统一社会信用代码、工商档案、现时股东名册、境内外关联实体、商标/软件著作权链、历史合同承接或收入归属。因而，Approaching.AI、ATaaS、KTransformers、Mooncake、KVCache.AI、华东区域总部、清华团队和所有合作方均不是可直接并入交易范围的“同一法人资产”。[R1](../raw/sources/2026-08-09-approachingai-official-company-and-timeline.md)[R4](../raw/sources/2026-08-09-36kr-approachingai-financing.md)
+
+**分类结论。** 官网 ATaaS 明确主张 CPU+GPU、国产与非国产算力异构、PD 分离、按算子/任务智能分流，以及异构硬件、模型和推理引擎统一纳管；这构成 4.3、4.2、4.4 的产品级证据。[R2](../raw/sources/2026-08-09-approachingai-official-ataas-products-and-modes.md) 但它没有公开跨厂商**训练**作业调度、作业队列/配额、检查点恢复、数据局部性、训练框架适配、异构训练性能或客户 SLA，因此不能因“万卡”“异构”或模型服务宣传扩张为 4.1。
+
+**投资判断：积极关注、但暂不进入定价或排他谈判。** 2025 年天使、2026 年 Pre-A 与 A 轮构成连续融资信号；A 轮报道口径为“半年内累计超过 10 亿元”。然而金额含“数千万元”“数亿元”“超过”的非精确表述，且两篇 Pre-A 报道可能是同一事件的不同发布日期，不能相加；更不能从媒体/投资方口径推出当前持股、估值或实际控制。[R4](../raw/sources/2026-08-09-36kr-approachingai-financing.md) 投资前的 P0 是取得逐轮协议、工商变更、cap table、优先权、资金到账、IP 作价增资文件，以及可复算的生产服务单元经济。
+
+**并购判断：不建议当前收购。** 有价值的潜在组合是“生产级异构推理系统工程 + Token 服务运营”，而不是“把开源项目、清华成果、合作客户和地方 Token 工厂一起买下”。公司/投资方资料称相关清华技术成果已作价增资入股，但尚无资产清单、权属链、估值、排他权、员工成果转让或开源许可履约材料；这些是并购可交割性的前置条件。[R4](../raw/sources/2026-08-09-36kr-approachingai-financing.md)
+
+**对人形机器人公司。** 推荐以“高端长上下文/VLA 云端或私有推理”的双供应商 PoC 进入合作，而非作为训练集群主控或端侧实时控制器。验证重点是 PD 分离在视觉-语言-动作（VLA）序列上的端到端 p95/p99 延迟、输出正确性、GPU/NPU/CPU 组合、KV 缓存命中、故障降级与单位有效任务成本。采购不应独家；自研仍应保留推理入口、模型路由、观测与回退控制面。
+
+## 一、法人、品牌、开源与资产边界
+
+| 对象 | 在本报告中的处理 | 现有证据支持什么 | 明确不能推出什么 |
+|---|---|---|---|
+| **北京趋境科技有限责任公司** | 唯一研究、采购和交易判断对象。 | 官网直接以该法人的全称陈述其公司与产品定位。[R1](../raw/sources/2026-08-09-approachingai-official-company-and-timeline.md) | 注册资本、法定代表人、统一社会信用代码、当前股权与控制权。 |
+| Approaching.AI／趋境科技 | 目标法人的当前官网品牌。 | 官网和融资报道将品牌与公司对外服务相连。[R1](../raw/sources/2026-08-09-approachingai-official-company-and-timeline.md)[R4](../raw/sources/2026-08-09-36kr-approachingai-financing.md) | 所有历史品牌活动、海外页面或地区总部的合同/收入必然归于目标法人。 |
+| ATaaS、Token Services、Token System、Token Machine | 官网展示的产品/服务主张。 | 有明确产品形态、能力表述及整机交付、软件授权、联合运营三种商业模式。[R1](../raw/sources/2026-08-09-approachingai-official-company-and-timeline.md)[R2](../raw/sources/2026-08-09-approachingai-official-ataas-products-and-modes.md) | 软件著作权、源代码、许可证、客户合同、交付量或收入。 |
+| KTransformers、Mooncake、KVCache.AI | 生态/开源和技术参与线索，非默认并购资产。 | 官网/报道称目标法人参与 KTransformers、Mooncake 的牵头、设计或开发；KTransformers 官网也标注 By 趋境科技。[R3](../raw/sources/2026-08-09-approachingai-official-news-and-cooperation.md)[R4](../raw/sources/2026-08-09-36kr-approachingai-financing.md)[R5](../raw/sources/2026-08-09-inference-runtime-comparison-official-docs.md) | 著作权归属、控制权、可排他授权、社区贡献者成果转让、可随公司股权交易转移。 |
+| 清华大学/高性能所、郑纬民、武永卫、章明星及个人团队 | 高校/科研渊源和技术顾问/联合发起人线索。 | 官网称郑纬民任首席科学顾问、武永卫任首席科学家；报道称相关团队技术成果作价增资入股。[R1](../raw/sources/2026-08-09-approachingai-official-company-and-timeline.md)[R4](../raw/sources/2026-08-09-36kr-approachingai-financing.md) | 学校对公司控制、全部科研成果已转让、教授雇佣关系、未来专利/代码或学生贡献归属。 |
+| 商汤、华为昇腾、上海 AI 实验室、智谱、月之暗面等 | 仅按合作、适配或客户自述登记。 | 有战略合作、适配、生态接入或服务表述。[R3](../raw/sources/2026-08-09-approachingai-official-news-and-cooperation.md)[R4](../raw/sources/2026-08-09-36kr-approachingai-financing.md) | 排他合作、订单金额、验收、回款、共同 IP、长期续约或客户收入。 |
+
+## 二、分类依据与证据阈值
+
+| 分类 | 结论 | 直接证据 | 仍缺的生产证据 |
+|---|---|---|---|
+| **4.3 推理跨 XPU 异构调度（主）** | 纳入。 | ATaaS 称“CPU+GPU、国产与非国产算力异构、PD 分离”，并称兼容主流国产/非国产硬件、CPU+GPU/GPU+GPU 异构推理；昇腾 910C 适配新闻是另一条品牌侧佐证。[R2](../raw/sources/2026-08-09-approachingai-official-ataas-products-and-modes.md)[R3](../raw/sources/2026-08-09-approachingai-official-news-and-cooperation.md) | 支持的芯片/型号/驱动矩阵、跨 XPU 迁移条件、精度差异、吞吐与长稳测试、失败切换。 |
+| **4.2 推理 PD 分离（副）** | 纳入。 | 官网将 PD 分离列入“异构推理 2.0”，并把 PD 分离、全局 KVCache 调度用于大规模集群的资源解耦与容错；商汤合作新闻也直接写异构 Prefill-Decode 协同。[R2](../raw/sources/2026-08-09-approachingai-official-ataas-products-and-modes.md)[R3](../raw/sources/2026-08-09-approachingai-official-news-and-cooperation.md) | P/D 节点独立扩缩/故障转移、跨网延迟、缓存一致性、预填充/解码配比与真实成本。 |
+| **4.4 多厂商算力池（副）** | 纳入，但以产品自述为限。 | 官网称各类异构硬件、模型、推理引擎统一纳管，支持国产和非国产硬件，并对异构算力配额/优先级进行分配。[R2](../raw/sources/2026-08-09-approachingai-official-ataas-products-and-modes.md) | 已运营的供应商组合、池化边界、计量结算、配额隔离、设备接入协议和第三方审计。 |
+| **4.1 跨厂商训推算力调度平台** | 不纳入。 | 公开证据集中于推理、Token 服务、KV Cache 和推理资源调度。 | 训练/后训练任务编排，跨厂商 XPU 训练，数据/检查点/通信故障管理和生产训练客户证据。 |
+| **5.2 推理框架** | 不作目标法人的公司分类。 | KTransformers 是可观察的开源推理/微调框架；官网材料显示其可利用 CPU/GPU 异构计算，SGLang 是 GPU 推理部分的上游/协作框架。[R5](../raw/sources/2026-08-09-inference-runtime-comparison-official-docs.md) | 目标法人拥有其完整 IP、商业授权权或将其独立销售的证据。 |
+
+## 三、纵向：从本地异构推理到 Token 工厂
+
+### 3.1 起点存在一个必须保留的日期冲突
+
+官网时间轴写“2024 年 3 月公司成立”，而 2026 年授权转载文章写“成立于 2023 年底”。两者很可能分别对应团队创业启动与法人/对外成立节点，但没有设立登记或公告可以裁决。本报告因此只写“**2023 年底至 2024 年 3 月间形成创业主体，精确法人成立日待核**”，不能把任一日期扩展成工商事实。[R1](../raw/sources/2026-08-09-approachingai-official-company-and-timeline.md)[R4](../raw/sources/2026-08-09-36kr-approachingai-financing.md)
+
+### 3.2 2024：技术命题先于商业产品
+
+官网将 2024 年 5 月定位为 KTransformers 提出 CPU+GPU 异构推理范式，10 月定位为以 KV Cache 为中心的分布式推理架构发布。[R1](../raw/sources/2026-08-09-approachingai-official-company-and-timeline.md) 这里的关键选择不是先做模型聚合平台，而是把 CPU、GPU、内存和缓存复用放进同一个推理成本函数。KTransformers 官网的当前描述仍是低显存、原精度、CPU/GPU 异构推理和本地微调，说明这条支线更接近开发者/边缘大模型的系统软件，而非 ATaaS 的完整企业生产控制面。[R5](../raw/sources/2026-08-09-inference-runtime-comparison-official-docs.md)
+
+这一早期选择形成两个后续约束。其一，团队更容易把“单位硬件上的有效 Token”做成可解释的优化目标；其二，低显存本地推理、开源框架与万卡 Token 生产是不同商业对象，不能用前者的社区关注度直接证明后者的规模化服务收入。
+
+### 3.3 2025：从工作站走向国产异构和生产推理
+
+官网时间轴称 2025 年 2 月发布单卡推理 671B 一体机，5 月与鲲鹏/昇腾发布国产化异构推理硬件，随后将 PD+EP 推理、秒级拉起、微调和论文入选列为技术里程碑。[R1](../raw/sources/2026-08-09-approachingai-official-company-and-timeline.md) 官网新闻另称与金航数码签署人工智能业务合作框架、与鲲鹏推出“鲲鹏+xPU”方案；这些说明其开始把技术包装成行业交付和硬件协同，但仍缺合同主体、金额与验收。[R3](../raw/sources/2026-08-09-approachingai-official-news-and-cooperation.md)
+
+融资随之进入公开报道：2025 年 2 月为“数千万元”天使轮，高瓴创投、Z 基金领投，水木校友种子基金跟投，真知创投追投。[R4](../raw/sources/2026-08-09-36kr-approachingai-financing.md) 此节点更像为推理引擎和软硬一体工作站产品化提供资金，而不是已证明大规模 SaaS 的审计收入。
+
+### 3.4 2026：ATaaS 把技术栈改写为“Token 生产服务”
+
+官网将 2026 年 3 月定为 ATaaS/TaaS 发布节点。产品层面，ATaaS 把异构推理、KV Cache、算子级仿真和弹性能力组合为 Token System；再加上整机交付、软件授权、联合运营三种模式，商业对象从“卖一台推理工作站”变成“帮助客户将既有/新增算力运营为 Token 产能”。[R1](../raw/sources/2026-08-09-approachingai-official-company-and-timeline.md)[R2](../raw/sources/2026-08-09-approachingai-official-ataas-products-and-modes.md)
+
+2026 年 5/6 月报道 Pre-A 为“数亿元”，由星连资本、华控科技联合领投等；7 月 A 轮由河南投资集团汇融基金领投，报道的累计融资口径为“超过 10 亿元”。[R4](../raw/sources/2026-08-09-36kr-approachingai-financing.md) 此轮资金拟扩充 Token 产能、升级 ATaaS，并推进国产异构算力投产。该路径把企业绑定到了一个更重的执行问题：Token 服务扩张需要同时获得芯片供给、部署/运维、客户负载和回款，研发指标不能代替现金周转。
+
+### 3.5 2026 年中后段：合作密集，但须把“合作”拆开看
+
+官网新闻列出与商汤大装置共建 Token 工厂、与昇腾 CANN 做 Kimi K3 Day 0 适配、与上海 AI 实验室围绕 DeepLink/Mooncake 探索跨芯片和跨地域协同、与钱江世纪城签产业投资合作建设华东交付中心。[R3](../raw/sources/2026-08-09-approachingai-official-news-and-cooperation.md) 这些节点让 4.2/4.3/4.4 的技术方向更可信，但它们仍主要是公司自述或伙伴内容的再传播：无法直接得出某一合作已转成订单、某一地方项目已投产、某个模型客户的合同由北京法人签署，或任何一方对代码/IP 享有共同控制。
+
+## 四、当前产品与商业化边界
+
+| 产品/能力层 | 已看到的公开主张 | 对人形机器人公司潜在价值 | 不能当作已证实的能力 |
+|---|---|---|---|
+| Token Services | 将算力资源指标与业务 SLO 对齐，动态调度资源；报道称向智谱 GLM、Kimi 等提供服务。 | 对云端 VLA 助手、远程运维 Agent、长上下文知识/规划服务，可比较按有效请求而非按裸卡付费的成本。 | 客户合同、价格、SLO、区域可用性、数据隔离、训练数据处理、机器人负载生产规模。[R4](../raw/sources/2026-08-09-36kr-approachingai-financing.md) |
+| ATaaS / Token System | CPU/GPU、国产/非国产、PD 分离；KV Cache 扩展、仿真、弹性和统一纳管。[R2](../raw/sources/2026-08-09-approachingai-official-ataas-products-and-modes.md) | 用于验证多芯片/多集群推理和长上下文缓存复用。 | 跨芯片精度一致性、支持矩阵、稳定性、可观测性接口、运行时版本锁定和故障恢复。 |
+| Token Machine | 一体机/私有化集群的产品化入口，官网列整机交付。 | 可做工厂内/研发网隔离的私有推理 PoC。 | BOM、芯片供货、维修/RMA、散热/功耗、网络、软件授权年限和交付责任。 |
+| 软件授权/联合运营 | 可在客户硬件部署 ATaaS，或按 Token 产能分成。[R2](../raw/sources/2026-08-09-approachingai-official-ataas-products-and-modes.md) | 适合与既有集群结合，减少一次性硬件锁定。 | 分成公式、最低承诺、资产所有权、数据权、退出和迁移权、损失赔付。 |
+| KTransformers / Mooncake | KTransformers 偏 CPU/GPU 本地异构；Mooncake 为分布式 KV Cache/存储技术参与线索。 | 可作为 PoC 的技术对照和透明度来源。 | 直接商业支持义务、开源代码全部权属、企业产品与开源版功能等价、未来路线控制权。[R3](../raw/sources/2026-08-09-approachingai-official-news-and-cooperation.md)[R5](../raw/sources/2026-08-09-inference-runtime-comparison-official-docs.md) |
+
+## 五、融资历史：保留原始口径，不做虚假精确累计
+
+| 时间 | 阶段与金额原文 | 报道投资方 | 可用于判断 | 不能用于判断 |
+|---|---|---|---|---|
+| 2025-02-27 | 天使轮，“数千万元” | 高瓴创投、Z 基金领投；水木校友种子基金跟投；真知创投追投。 | 存在早期外部融资报道。 | 精确金额、估值、股份、交割与当前持股。 |
+| 2026-05-20 / 06-05 | Pre-A，“数亿元” | 星连资本、华控科技联合领投；弘晖资本、天壕能源、尚势资本、天津仁爱弘盛、杭州福成跟投；高瓴创投持续加注。 | 存在中期融资与产业/财务资本关注。 | 两个发布日期是否两轮；本报告按**同一已报道 Pre-A 事件**处理，不重复累计。 |
+| 2026-07-13 | A 轮；半年累计“超过 10 亿元” | 河南投资集团汇融基金领投；星连、真知、尚势、上海国方创新、弘晖、华控、杭州福成等持续跟投。 | 资金投向 Token 产能、ATaaS 和国产异构投产是公司披露计划。 | A 轮单轮金额、累计构成、资金到账、估值、治理权与现时 cap table。 |
+
+统一来源：[R4](../raw/sources/2026-08-09-36kr-approachingai-financing.md)。融资表不把“数千万元”“数亿元”“超过 10 亿元”改写为精确数字，也不把同一 Pre-A 的不同转载累计两次。
+
+## 六、五类分拆合作网络
+
+| 网络类别 | 已知对象/事件 | 证据等级 | 可确认的关系 | 边界 |
+|---|---|---|---|---|
+| **投资方/股东** | 高瓴创投、Z 基金、水木校友种子基金、真知创投、星连资本、华控科技/基金、弘晖、天壕、尚势、天津仁爱弘盛、杭州福成、河南投资集团汇融基金等。 | B：融资报道/投资方转载。 | 在相应轮次被报道为领投、跟投或追加。 | 不是当前股东名册；无持股比例、优先权、董事席位或交割证明。[R4](../raw/sources/2026-08-09-36kr-approachingai-financing.md) |
+| **客户/订单** | 智谱 GLM、月之暗面 Kimi；官网匿名客户证言。 | B：公司/投资方披露。 | 报道称 ATaaS 为 GLM、Kimi 等提供服务；官网展示多种行业场景。 | 合同主体、计费、调用量归属、验收、回款、续约和数据权均未见。[R2](../raw/sources/2026-08-09-approachingai-official-ataas-products-and-modes.md)[R4](../raw/sources/2026-08-09-36kr-approachingai-financing.md) |
+| **产业合作** | 商汤大装置、金航数码、萧山区钱江世纪城。 | A-：目标法人官网资讯自述。 | 有战略合作、框架或产业投资合作的公开说法。 | 不证明合资、订单、项目资本开支、已投产规模、排他或收益分配。[R3](../raw/sources/2026-08-09-approachingai-official-news-and-cooperation.md) |
+| **技术/联合研发** | 华为昇腾 CANN、上海 AI 实验室/DeepLink、llm-d、SGLang、vLLM、Mooncake。 | A-：官网资讯；项目官方资料。 | 有 Kimi K3 910C 适配、DeepLink/Mooncake 合作及社区参与说法。 | 联合研发协议、共同 IP、代码贡献者、上游许可及商业支持义务未核。[R3](../raw/sources/2026-08-09-approachingai-official-news-and-cooperation.md)[R5](../raw/sources/2026-08-09-inference-runtime-comparison-official-docs.md) |
+| **高校/科研渊源** | 清华大学高性能计算研究所、郑纬民、武永卫、章明星。 | A-（官网自述）/B（融资转载）。 | 团队科研渊源、顾问/科学家和技术成果作价增资的披露线索。 | 清华全部成果或所有未来研究成果均归公司；学校控制公司；成果注入范围与完整权属。[R1](../raw/sources/2026-08-09-approachingai-official-company-and-timeline.md)[R4](../raw/sources/2026-08-09-36kr-approachingai-financing.md) |
+
+## 七、横向：真正的竞争不是“谁也会做推理”，而是谁控制生产边界
+
+横向比较采用同一时点的公开产品定位，不比较未披露的收入、客户数或性能，也不把开源框架与公司一一等同。
+
+| 对象/替代路径 | 当前公开路线 | 与趋境的差异 | 对机器人公司的含义 |
+|---|---|---|---|
+| **北京趋境科技有限责任公司** | Token 服务 + ATaaS + 软硬一体/授权/联合运营；重点是少模型、深优化、PD 与异构系统工程。 | 更靠近“把特定生产负载运营成高品质 Token”的交付和运营层。 | 要测试其对多模态/VLA 长上下文的真实 SLO，不能只测通用聊天 TPS。[R2](../raw/sources/2026-08-09-approachingai-official-ataas-products-and-modes.md) |
+| **上海无问芯穹智能科技股份有限公司（无问芯穹）** | 官方资料称其支持 NVIDIA、AMD、华为昇腾等 16 种芯片的池化管理与智能调度，并覆盖训练、推理及具身智能工具链。 | 无问芯穹公开定位覆盖面更广，尤其是训练与具身工具链；趋境的公开叙事更集中于推理 Token 生产与深优化。 | 适合拿无问芯穹作“机器人训练/推理全周期、多芯池化”对照组；两者都应以同一 VLA 工作负载实测，不以官网范围决定胜负。[R6](../raw/sources/2026-08-09-infinigence-official-site-products-and-entity.md)[R7](../raw/sources/2026-05-07-infinigence-official-financing-and-maas.md) |
+| **北京硅基流动科技股份有限公司（硅基流动）** | 官网展示按量 API、预留实例、推理加速和私有化部署。 | 硅基流动的购买入口更接近 MaaS/API 与推理加速；趋境强调从硬件到 Token 产能的专属运营。 | 适合作为“直接买 API/预留实例”替代方案，尤其用于不需本地异构集群控制的应用层试验。[R8](../raw/sources/2026-08-09-ai-infra-competitor-official-positioning.md) |
+| **vLLM / SGLang 等开源运行时自建** | vLLM 提供 PagedAttention、连续批处理、chunked prefill、prefix caching 和分布式并行；SGLang 面向从单卡到大集群的低延迟高吞吐服务。 | 开源运行时给出底层能力和可控性，缺的是跨硬件整合、生产运维、客户 SLO/Token 运营的责任主体。 | 是采购趋境时最重要的“自研基线”：若自建可达到接近 SLO/成本，服务溢价必须显著收敛。[R5](../raw/sources/2026-08-09-inference-runtime-comparison-official-docs.md) |
+
+**横向判断。** 趋境最有价值的位置并不在“又一个推理框架”，也不在“模型数量最多的 API 平台”，而在把异构芯片、缓存、PD、运维和客户负载绑定为一个生产责任面。这个位置如果被证明，能产生系统级切换成本；如果不能证明，就会同时面对开源运行时的成本下压、MaaS 平台的价格竞争和更宽产品线公司的替代。公开材料尚未显示它在机器人训练调度上形成优势，因此不应因其“异构”标签替代训练平台评估。
+
+## 八、横纵交汇：历史选择如何塑造当前位置
+
+从 2024 年 CPU/GPU 异构与 KV Cache 出发，到 2025 年一体机和国产 xPU 协同，再到 2026 年 ATaaS/Token 工厂，趋境的连续选择是一条“**先把每单位硬件跑深，再把能力交给生产运营**”的路线。[R1](../raw/sources/2026-08-09-approachingai-official-company-and-timeline.md)[R2](../raw/sources/2026-08-09-approachingai-official-ataas-products-and-modes.md) 因而，它今天相对无问芯穹、硅基流动和开源运行时的差异，不是单一模型兼容表，而是是否能把局部的异构优化转成长期、可计量、可复制的高品质 Token 毛利。
+
+优势的历史根源是团队长期处在系统软件、缓存和异构计算的问题域，能够自然把 CPU、内存、GPU/NPU、PD 和调度放在同一优化层。弱点也来自同一选择：从开源/架构原型跨越到重资产 Token 工厂，业务成功依赖客户负载、算力采购、运维组织和回款，且这些环节的公开可验证资料远少于技术宣传。融资加速放大了复制机会，也放大了资产利用率和资本开支的风险。
+
+### 三个可证伪剧本
+
+| 剧本 | 触发条件/可观测指标 | 对公司和机器人买方的含义 | 应对动作 |
+|---|---|---|---|
+| **最可能：垂直生产服务商** | 商汤/区域工厂与少数头部模型服务能给出持续 Token 负载、SLO、回款和毛利；国产 PD 方案能在多芯环境稳定复制。 | 趋境成为高要求企业推理的备选供应商，但不替代训练控制面。 | 做 2–3 个模型/芯片组合 PoC，按 p95/p99、有效任务成本和故障恢复签阶段性合同。 |
+| **最危险：资本先行、负载滞后** | 产能扩张快于付费消纳；关键指标只剩公司口径；模型厂商/开源运行时压低服务价格；地方项目没有可见验收/回款。 | Token 工厂的固定成本和存量硬件折旧吞掉技术效率优势。 | 不预付长期最低量；要求硬件所有权、迁移/退出、数据销毁、应急回退与价格下调条款。 |
+| **最乐观：国产异构生产标准层** | 多芯 PD、KV Cache 和调度接口被多家芯片/模型客户复用；技术资产和商用支持权清晰；联合运营形成可审计的单位经济。 | 可成为机器人云端推理/私有推理的第二来源，并为国产芯片适配提供联合验证入口。 | 从少数股权/战略合作升级到可选择性投资；仍保留运行时适配、路由和观测的自研控制点。 |
+
+## 九、面向人形机器人公司的动作建议
+
+| 选项 | 建议 | 进入条件 | 关键否决/退出条件 |
+|---|---|---|---|
+| **采购** | **有条件 PoC，非独家。** 先用于云端 VLA/多模态服务、远程运维 Agent 或私有知识推理，不用于运动控制闭环。 | 同一模型、同一 token 上下文、同一芯片组合下，与 vLLM/SGLang 自建基线对比 TTFT、decode、端到端成功率、缓存命中、每有效任务成本和 p99。 | 无法提供可重复基准、数据隔离/删除证明、故障演练、可携带日志或退场迁移。 |
+| **合作** | **优先。** 可围绕国产 GPU/NPU + VLA 推理、PD 解耦、KV Cache 复用和工厂内私有化交付设联合 PoC。 | 双方书面定义模型权属、数据边界、代码/专利归属、复现环境、客户交付主体及成果使用权。 | 合作只停留在发布会/接口适配，或要求排他、长期锁量、模糊 IP 条款。 |
+| **投资** | **观察后小额/分期战略投资。** | 审阅 cap table、三轮融资文件、技术作价资产清单、IP/开源合规、前五客户收入/毛利/回款、硬件承诺与现金消耗。 | 不能穿透主体或历史融资；核心技术归属/人员成果不清；客户/回款不能支撑产能扩张。 |
+| **并购** | **当前不建议。** 未来只考虑可明确剥离的企业产品、交付团队或特定技术资产包。 | 完成代码、专利、商标、开源依赖、清华成果许可、员工竞业/IP、客户转让同意和数据合规尽调。 | 将学校、开源社区、合作方和品牌声誉误当可转让资产；无法获得排他/控制权或关键人留任。 |
+| **自研** | **必须保留。** 自研模型路由、SLO/成本观测、推理网关、回退策略、VLA 评测和关键 runtime 适配；不必一开始复刻整套 Token 工厂。 | 以开源 vLLM/SGLang 为基线，积累机器人真实轨迹/视频/任务的负载剖面，再决定 PD、缓存和跨芯片调度的自研深度。 | 把供应商 PoC 成功误判为长期可控能力，放弃入口、遥测和模型部署控制。 |
+
+## 十、证据矩阵、冲突与开放尽调项
+
+| 承重结论 | 来源/等级 | 结论强度与限制 |
+|---|---|---|
+| 北京趋境科技有限责任公司是官网对应法人，且有三类产品形态。 | 官网原文，A。[R1](../raw/sources/2026-08-09-approachingai-official-company-and-timeline.md) | 高：品牌/官网内容映射；不等于工商股权、合同或 IP 的完整穿透。 |
+| ATaaS 涉及异构推理、PD 分离和统一纳管。 | 官网产品页，A。[R2](../raw/sources/2026-08-09-approachingai-official-ataas-products-and-modes.md) | 高：产品主张；性能数字、兼容范围和真实生产 SLA 仍待复验。 |
+| 商汤、昇腾 CANN、上海 AI 实验室等为合作/适配线索。 | 官网新闻，A-。[R3](../raw/sources/2026-08-09-approachingai-official-news-and-cooperation.md) | 中高：可证明公司对外披露；不能证明订单、持续状态或共同 IP。 |
+| 天使、Pre-A、A 轮及“累计超过 10 亿元”。 | 36 氪快讯/授权转载，B。[R4](../raw/sources/2026-08-09-36kr-approachingai-financing.md) | 中：可记录原文口径；不等于工商已完成、精确累计或当前股东。 |
+| KTransformers 与 ATaaS 的技术边界。 | 项目官网/官方文档，A。[R5](../raw/sources/2026-08-09-inference-runtime-comparison-official-docs.md) | 高：项目能力说明；不证明全项目 IP 或商业支持归目标法人。 |
+
+**必须保留的冲突与未确认事项：**
+
+1. 法人成立时间存在“2023 年底”与“2024 年 3 月”的冲突，需工商设立档案裁决。[R1](../raw/sources/2026-08-09-approachingai-official-company-and-timeline.md)[R4](../raw/sources/2026-08-09-36kr-approachingai-financing.md)
+2. Pre-A 的 2026-05-20 快讯与 2026-06-05 投资方授权文可能为同一轮，不应按两轮累计。[R4](../raw/sources/2026-08-09-36kr-approachingai-financing.md)
+3. “清华技术成果作价增资入股”需技术资产清单、作价报告、被注入法人、权利负担、排他范围及后续成果安排；没有这些不能把科研渊源变为可收购 IP。[R4](../raw/sources/2026-08-09-36kr-approachingai-financing.md)
+4. 订单、日均 Token、产能、效率、成本、TTFT 和“跨过成本线”均主要来自公司/投资方披露；需按客户、模型、芯片、地域和负载拿到原始监控、合同与回款数据。[R2](../raw/sources/2026-08-09-approachingai-official-ataas-products-and-modes.md)[R4](../raw/sources/2026-08-09-36kr-approachingai-financing.md)
+5. KTransformers/Mooncake 与公司产品的 IP、贡献者、许可证、商业支持和合同承接边界未闭环；这是任何投资、并购或深度合作的 P0 法务问题。
+
+### 下一步验证计划（30–60 天）
+
+1. **主体/资本：** 调取工商档案、章程、历次增资/股转、投资协议、cap table、董事会和关联方清单。
+2. **技术/IP：** 获取 ATaaS 架构、支持矩阵、版本/依赖 SBOM、KTransformers/Mooncake 贡献与授权清单、清华技术成果文件、员工 IP 与竞业协议。
+3. **商业：** 核验前五客户合同、定价、计量、调用量、验收、回款、续约、产能占用和毛利；区分 Token 服务、软件授权、整机交付和联合运营。
+4. **机器人 PoC：** 用一个长视频/多模态 VLA 任务、一个多轮 Agent 任务、一个私有化环境，比较目标系统与 vLLM/SGLang 自建基线；记录 p50/p95/p99、有效任务成功率、精度、峰值并发、单任务成本、恢复时间和跨芯片切换。
+5. **供应连续性：** 逐项核验 GPU/NPU/CPU、NIC、存储、交换、驱动/CANN、SGLang/vLLM 版本、机房/电力和驻场支持的单点风险。
+
+## Raw 来源
+
+- [R1 官网公司与时间轴](../raw/sources/2026-08-09-approachingai-official-company-and-timeline.md)
+- [R2 官网 ATaaS 产品与商业模式](../raw/sources/2026-08-09-approachingai-official-ataas-products-and-modes.md)
+- [R3 官网资讯与合作](../raw/sources/2026-08-09-approachingai-official-news-and-cooperation.md)
+- [R4 36 氪融资报道](../raw/sources/2026-08-09-36kr-approachingai-financing.md)
+- [R5 KTransformers、vLLM、SGLang 官方资料](../raw/sources/2026-08-09-inference-runtime-comparison-official-docs.md)
+- [R6 无问芯穹官网产品资料](../raw/sources/2026-08-09-infinigence-official-site-products-and-entity.md)
+- [R7 无问芯穹融资及 Agentic MaaS 公告](../raw/sources/2026-05-07-infinigence-official-financing-and-maas.md)
+- [R8 硅基流动等官网定位资料](../raw/sources/2026-08-09-ai-infra-competitor-official-positioning.md)
+

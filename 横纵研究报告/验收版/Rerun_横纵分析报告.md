@@ -1,0 +1,231 @@
+# Rerun（Rerun Technologies AB）横纵分析报告
+> 研究截止日：2026-08-11 ｜对象类型：Physical AI 多模态数据记录、可视化、查询与训练数据层 ｜主体：Rerun Technologies AB
+
+## 结论先行
+
+Rerun 的本体不是训练数据供应商、标注外包商或机器人模型公司。它从开源的多模态数据 logging 与可视化工具起步，试图把机器人、无人机、自动驾驶与空间计算的多频率、多模态记录统一为可记录、回放、查询、变换、审阅和训练读取的数据层。公开资料显示：SDK 可以将数据直接记录或转换为 `.rrd`；RRD 以 Apache Arrow RecordBatch 与 Rerun 元数据组织 chunks；Viewer 既可原生运行也可在浏览器中运行；当前产品进一步提供 catalog、SQL/dataframe 查询、PyTorch dataloader 和 LeRobot 导出。[S2][S3][S9][S10]
+
+Rerun Technologies AB 是公开隐私政策和网站版权直接披露的主体。[S11] 对人形机器人公司，它最合理的切入点是作为**开发/评测阶段的物理数据可视化与可追溯数据层 P0**：把 ROS 2/MCAP、相机、点云、IMU、关节状态、轨迹、模型 rollout、仿真和标注结果用相同语义与时间轴审阅。应先验证其 `.rrd`、查询、对象存储、权限、采样、训练接入和退出路径，不能把其“可直接训练”“Hub”或开源案例升格成已验证的企业数据湖、数据采买服务或收入规模。
+
+主分类建议为 **`7 数据服务`（中高置信）**，更精确地说是“面向 Physical AI 的数据记录、可视化、编目、查询、变换和训练读取基础设施”。Rerun 的价值创造围绕数据生命周期和数据工程，而非训练框架本身、推理框架或通用集群管理。虽然文档展示 PyTorch dataloader 和 LeRobot export，但它不训练模型、不出售训练数据，也没有公开证据显示其经营人工标注/数据采集服务。[S5][S9][S10]
+
+投资建议为 **P0 开源评测、P1 商业化观察，不启动并购或财务投资立项**。正面证据是 $3.2M pre-seed、$17M seed、清晰的开源切入点、物理数据专用模型以及 Rerun Hub 的商业化方向；关键未知项是 Hub 的可用性、定价、企业客户、留存、对象存储/出境成本、安全/权限、数据格式锁定、支持容量和从开源采用到付费的转化。[S6][S13][S14]
+
+## 一、研究边界、主体与证据标准
+
+### 1.1 主体与产品边界
+
+Rerun 隐私政策将责任主体写为 **Rerun Technologies AB**，页面页脚也使用同一公司名。[S11] 这足以将报告对象从开源项目名“Rerun”锚定到商业主体，但不足以证明注册状态、全部关联公司、IP 归属、cap table、客户合同实体或云服务数据处理主体。任何投资、采购或并购前均应调取瑞典公司登记、股东名册、软件著作权/开源许可证、商标、雇佣与发明归属、DPA 和实际云服务合同。
+
+Rerun 当前有三个必须区分的产品层：
+
+- **开源 SDK、Viewer、Server 与数据格式**：开发者以 Python、C++、Rust 等接口记录/导入数据，使用本地/自托管 Viewer、Server 和 `.rrd` 文件可视化、查询与回放；这是公开采用的基础。[S2][S3][S8]
+- **数据层能力**：column chunks、RRD、catalog、SQL/dataframe、数据变换、dataset review、dataloader 等构成将记录数据用于分析和训练的工具/接口；它让客户处理自身数据，而非由 Rerun 代为生产数据。[S2][S5][S10]
+- **Rerun Hub**：公司在 2026 年资料中明确称其为商业 catalog 和 storage engine，处于 private preview，可连接对象存储、提供共享 catalog 与访问层。[S5] private preview 不能写成成熟、广泛可用或产生确定收入的云产品。
+
+### 1.2 本报告的证据纪律
+
+- Meta、Google、Hugging Face LeRobot、Unitree 等在 Rerun 官方文章中被称为在各自开源工作中采用其可视化。这说明技术生态采用线索，不说明它们是付费客户、投资方、联合研发方或 Rerun Hub 用户。[S6]
+- GitHub/SDK 下载、社区评价和开源嵌入可以证明开发者兴趣，不能证明企业 ARR、数据规模、生产 SLA、客户 retention 或数据服务收入。
+- “训练可直接读取 recording”的文档表示技术路径存在；不代表 Rerun 出售任何训练数据、拥有客户的机器人数据、替客户完成标注或替代全部训练管道。[S9][S10]
+- Hub、MCAP 兼容、Lenses、chunk processing 等出现“experimental”“private preview”时，一律保留该成熟度标签，不用路线图推导商业能力。[S5][S7][S8]
+
+## 二、纵向分析：从“看见计算机视觉”到把记录数据变成 Physical AI 数据层
+
+### 2.1 起源：可视化不是报告装饰，而是开发方法
+
+联合创始人兼 CEO Nikolaus West 在公司早期文章中称，Rerun 的联合创始人为 Moritz Schiebold 与 Emil Ernerfeldt，三人此前在 Volumental 共事；该团队认识到，计算机视觉/物理系统的许多工程减速并非算法不存在，而是工程师看不到数据、坐标关系和模型行为。Emil 的“先可视化、再解决问题”的工作方式，使团队能够更快发现系统错误并交付产品。[S14]
+
+这段出身很大程度上决定 Rerun 的第一代产品形态。它没有先做一个用于收集数据的 marketplace，也没有一开始做托管标注或模型训练平台，而是把“让代码中产生的图像、点云、tensor、轨迹、时序与 3D 关系可见”作为基础设施。早期文章还披露公司获得 **320 万美元 pre-seed**，投资方包括 Costanoa Ventures、Seedcamp 和天使投资人。[S14]
+
+从投资角度，这一选择的好处是开发者可以低摩擦采纳：先接入 SDK/Viewer 解决 debug 与可视化痛点，再逐步延伸到记录、分析和协作。它的约束也同样明显：纯开源可视化本身很难构成足以支撑大额软件估值的付费业务，因而公司后来必须在不破坏开源信任的条件下，寻找 catalog、对象存储、协作与大规模数据访问的商业边界。
+
+### 2.2 2023：OSS beta，把内部调试工具变成公共开发者基础设施
+
+2023-02，Rerun 发布 OSS beta。公告称已有少数团队将其作为内部主要 debugging tool，也用于向客户和投资人展示系统，并宣布项目开始接受开源贡献。[S4] 这属于典型的 developer-tool 起步：先用具备即时可见价值的 SDK 与 Viewer 获取用户，再观察哪些工作流需要服务器、协作和商业支持。
+
+这个阶段的 Rerun 仍主要是“记录 + 看见”。它适合将多模态时间序列、空间关系、相机、点云、检测、轨迹和指标以统一 viewer 呈现，但不能因此假定它已经解决了大型机器人数据集的权限、生命周期、成本归因、数据质量审计、训练调度或数据治理。公司后来的产品扩展恰好是在这些空白处展开。
+
+### 2.3 技术底座的形成：实体/组件/时间轴与 RRD column chunks
+
+Rerun 的数据模型围绕实体（entity）、组件（component）、时间线、空间 transform 与 recording 工作。其 `.rrd` 格式用于持久化 recordings 与 blueprints，底层是线性 framed messages，核心数据 chunk 为附有 Rerun 特定 schema metadata 的 Apache Arrow RecordBatch；footer index 支持随机访问。[S3] 对物理数据而言，这一设计的意图是避免把不同频率、不同体量的相机、IMU、GPS、关节状态与后处理结果强行塞入同一宽表造成空值和读写浪费。
+
+这也构成其相对于一般 3D viewer 或 dashboard 的技术差异：数据的语义（例如空间坐标、时间、组件、实体路径）不是只在可视化页面临时解释，而是进入记录和 chunk 模型。结果是同一底层记录可以被 Viewer、DataFrame/SQL 查询、transform 及训练读取复用。风险是数据模型和 `.rrd` 会成为新的工程依赖；开放的 Arrow 基础降低了部分锁定，但 Rerun 特定的 schema、SDK、blueprint 与 catalog 语义仍须评估迁移成本。[S3][S5]
+
+### 2.4 2024—2025：从“Viewer”向 ROS/MCAP、查询与机器人训练流程扩展
+
+物理 AI 团队往往已经有 ROS 2/MCAP 数据，强制改采集格式会成为进入障碍。Rerun 在 2025-09 宣布实验性 MCAP support：可拖入/用 CLI 加载 MCAP，使用分层方法将消息映射为 Rerun archetypes，并对常见 ROS 2 消息（图像、点云、IMU 等）提供语义化可视化。[S7] 但公告同时直陈限制：这是 nascent 功能，许多自定义消息尚不支持、tf transforms 尚在进行、ROS1 不支持，且 protobuf 数据可能只能结构化查询、未必有立即可用的语义可视化。[S7]
+
+这种诚实的边界对机器人采购反而有价值。它说明 Rerun 不是把 ROS/MCAP 生态“完全接管”，而是在逐步构建 importer/semantic layer。对于拥有大量自定义 action、力控、触觉、时钟同步和标定数据的人形机器人公司，不能因“支持 MCAP”就跳过完整的 topic/message/transform 兼容矩阵测试。
+
+2025 年的 0.27 release 又增加/改善了可独立于 entity hierarchy 的 coordinate frames（明确标为 experimental）、Python server management、viewer blueprint 控制、时间导航、entities/layers/properties 等能力。[S8] 它表明公司正在从一个手工调试窗口，演进为可嵌入 notebook、脚本、服务和自动报告的可编程开发基础设施；同时 API 演进速度本身也是采用风险，不能把 experimental API 写入关键生产契约而不设版本治理。
+
+### 2.5 2025—2026：资金、0.32 与 Rerun Hub，商业化从“可视化工具”转向数据访问层
+
+2025-03，Rerun 官方文章宣布 **1,700 万美元 seed**，由 Point Nine 领投，Costanoa、Sunflower Capital、Seedcamp 和多名天使参与；TechCrunch 同期报道总融资达到 **2,020 万美元**，与先前披露的 320 万美元 pre-seed 可相互校验。[S6][S13][S14] 这是公司从开源 visualization project 向 Physical AI data stack 扩张的资本基础，而非收入或估值证明。
+
+官方文章当时仍把已公开采用严格限定在“Meta、Google、Hugging Face LeRobot、Unitree 等在其开源工作中使用 Rerun 的 visualization”。[S6] 这说明 Rerun 的技术已经进入一些重要的开源生态，但没有披露这些组织是否采购其商业产品、是否传输私有生产数据，或贡献了多少收入。
+
+随后 Rerun 0.32 的公开叙事把产品推到完整数据旅程：chunk-level read/write API、对 RRD/MCAP/Parquet/URDF 的处理接口、Lenses、dataset review、open-source catalog server、PyTorch dataloader 与 LeRobot export。[S5][S9][S10] 同一篇文章宣布 **Rerun Hub** 为商业 catalog/storage engine、private preview，面向对象存储上的更大规模数据，提供共享 catalog、访问层、query/transform/visualize/stream 数据能力。[S5]
+
+这是最重要的战略转折。早期 Rerun 的护城河候选是更好的 Viewer 和开源 SDK；商业化后的护城河候选则是“让同一物理数据模型贯穿 collection、review、query、transform、training”的 catalog 与访问层。它的成败不再只取决于可视化 UX，而取决于对象存储、权限、多租户、安全、成本、查询性能、训练吞吐和开发者迁移是否能经得住企业实际数据规模。
+
+### 2.6 融资时间线
+
+| 时间 | 事件、金额与口径 | 投资方/证据 | 研究处理 |
+|---|---|---|---|
+| 早期创业阶段（公司文章，约 2021—2022） | Pre-seed，320 万美元 | Costanoa Ventures、Seedcamp 与天使投资人。[S14] | 已公开融资；文章未在此处提供完整交割日期/条款。 |
+| 2025-03 | Seed，1,700 万美元 | Point Nine 领投；Costanoa、Sunflower Capital、Seedcamp、天使投资人参与。[S6] | 已公开融资。 |
+| 2025-03 | TechCrunch 报道总融资 2,020 万美元 | TechCrunch；与 320 万 + 1,700 万算术一致。[S13][S14] | 用于二手交叉验证；不推断估值、现金余额或收入。 |
+
+公开可验证轮次合计为 **2,020 万美元**（320 万 + 1,700 万）；这是按两次公告相加的计算，不等同于最新账面现金或可支配资金。[S6][S14]
+
+## 三、产品与商业边界：Rerun 能让数据可见、可查、可供训练读取，但不拥有数据本身
+
+### 3.1 开源 SDK/Viewer 是底座，不是数据服务合同
+
+Rerun 的公开 SDK/Viewer 让开发者直接从应用代码 log 多模态数据，或者将现有格式转换为 `.rrd`，再可视化和查询。[S2] Viewer 可以在本地或 Web 环境运行；架构资料称 logging data 可写入 `.rrd`，或经 gRPC 发送给 Viewer/Server，Web Viewer 可加载文件或读取流式数据。[S3][S8]
+
+这里的商业边界很关键：使用开源 SDK 或在本地查看 RRD，并不代表客户把数据托管给 Rerun，也不证明 Rerun 获得客户的训练数据、数据使用权或服务费。对机器人公司，这一层有很高的 P0 价值，因为它允许先在不外传敏感数据的场景验证记录模型、可视化和导出能力；它也意味着开源采用本身未必转化为商业收入。
+
+### 3.2 从日志到可查询数据：RRD、Arrow 和 catalog
+
+RRD 的 chunk 是 Arrow RecordBatch，附带可解释 entity、component、timeline 等语义；同一 recording 可以由不同机器/进程分别产生，并在 Viewer 或 catalog 的 layer 中组合为逻辑数据集。[S3] Rerun 0.32 的 open-source catalog server 已可索引磁盘上的 RRD，提供 SQL 或 dataframe 查询；其 catalog object model 以 datasets、segments、layers 组织记录，且 layers 不可变、通过新 RRD 覆盖注册。[S5][S12]
+
+这对机器人数据闭环很有价值：原始多传感器记录、后处理输出和某次模型评测结果可以用同一查询/可视化语义关联，而不必每次将数据摊平成不同的临时表。代价是工程团队需要选择记录分片、schema 演进、ID、time alignment、索引和存储策略；Rerun 提供基础能力，不会替客户自动做数据质量治理、权属管理、保留策略或训练样本业务定义。
+
+### 3.3 “Train” 是数据读取接口，而不是训练框架或数据采买
+
+Rerun catalog 可以通过两种方式为训练提供数据：导出到标准训练格式，或使用 experimental `rerun.experimental.dataloader` 直接作为 PyTorch iterable/map-style dataset；文档明确介绍 cross-worker/DDP partitioning 与 Arrow column 到 `torch.Tensor` 的 decoder。[S10] 其 LeRobot 导出工具要求用户定义如何将其数据映射到 LeRobot schema，并把生成数据集写到用户指定目录或由用户推送到 Hugging Face Hub。[S9]
+
+这代表 Rerun 已经触及训练数据管道，却仍不是训练框架：它不负责模型定义、optimizer、GPU/集群调度、实验追踪全栈或模型部署。更不是数据服务商：文档中的输入是**用户记录的数据**，映射和数据集输出仍由用户控制。[S9][S10] 对人形机器人公司，这一层最有意义的价值是缩短“发生一次失败—定位相关时空数据—重建/筛选数据集—复训评测”的闭环，而不是替代数据采集、人工标注或基础模型训练团队。
+
+### 3.4 Rerun Hub：商业方向存在，成熟度与边界仍待验证
+
+Rerun 将 Hub 描述为商业 catalog/storage engine，连接开源 SDK、对象存储及共享访问层，支持在不必把所有数据塞入本地机器的情况下进行选择性 chunk streaming、query、transform、visualize 和训练读取；该文章明确称 Hub 为 private preview。[S5] 这是一个可信的商业模式方向：开源 SDK/Viewer 负责开发者渗透，Hub 负责协作、目录、对象存储访问、权限和规模化数据服务。
+
+但 private preview 仍留下关键缺口：部署地域、数据主权、身份/权限模型、审计、KMS、DPA、定价、SLA、对象存储 egress、缓存、跨项目隔离、并发 query、训练吞吐、灾备和客户案例均没有在公开资料中充分披露。采购时不能以官网“data layer”概念替代对这些控制面的尽调。
+
+## 四、横向分析：Rerun 争夺的是 Physical AI 数据工作流的共同语言
+
+### 4.1 赛道地图
+
+| 路线/代表 | 用户实际获得什么 | 对 Rerun 的替代/威胁 | Rerun 的生态位 |
+|---|---|---|---|
+| RViz、Foxglove、ROS/MCAP 可视化工具 | ROS 消息、日志、实时/离线可视化与调试 | ROS 兼容、成熟用户习惯和既有工作流 | Rerun 以跨语言 SDK、entity/component 数据模型、RRD、query/transform 和训练接入扩展到数据全生命周期。 |
+| TensorBoard、Weights & Biases、MLflow | 实验指标、训练曲线、artifact/实验管理 | 在模型训练实验治理与团队协作上成熟 | Rerun 重点是视频/点云/时空轨迹等物理数据，不能自动替代完整实验治理。 |
+| 数据湖/湖仓（对象存储 + Parquet/Lance/Databricks 等） | 大规模表格/文件、SQL、治理与计算生态 | 企业数据治理、通用数据处理规模和成熟商业能力 | Rerun 试图为多频率、多模态、空间语义保留一致模型；需证明能与现有湖仓协作而非强制重建。 |
+| Scale AI、Labelbox、数据采集/标注服务 | 数据采买、人工/模型标注、质量运营 | 直接解决数据供给与标注产能 | Rerun 不提供公开的采集/标注外包服务；可帮助客户审阅和处理自有数据。 |
+| 自研播放器、脚本与内部数据平台 | 完全贴合公司机器人、传感器、权限和流程 | 数据主权、深度定制和避免第三方依赖 | Rerun 可减少重复可视化/转换基础工程，但必须证明格式和 API 能融入既有平台。 |
+
+### 4.2 与 ROS/MCAP 可视化路线：接入成本是第一场战斗
+
+Rerun 若要求客户放弃现有 ROS/MCAP，就很难成为数据层。因此实验性 MCAP support 是关键产品桥梁：标准 ROS 2 消息可以转换为图像、点云、IMU 等可解释 component，而同一文件可在不同 abstraction layer 被查询/可视化。[S7] 这让公司能够先从用户已有日志开始，而不是先要求重写机器人软件。
+
+限制也同样具体。Rerun 承认自定义 message、tf transforms、ROS1 等仍有缺口，protobuf 的结构化数据也可能无法即时形成有意义的视觉解释。[S7] Rerun 对人形机器人公司的真实竞争力，不在演示标准 message，而在能否把自定义手部力觉、关节状态、时钟、控制指令、相机/LiDAR 外参、仿真状态和 VLA rollout 映射为稳定的可查询语义。那必须通过真实数据 POC，而非靠产品目录判断。
+
+### 4.3 与训练实验工具：看到失败样本，比看到 loss 曲线更接近机器人问题
+
+TensorBoard 或 W&B 擅长把指标和模型运行组织起来；Rerun 的长处是将某次 loss/error 与多帧视频、3D 场景、传感器和控制轨迹一起回放。公司首页把训练数据审阅、从 failure 追溯到导致它的数据、SQL/dataframe 查询以及同一 viewer 的共享列为工作流。[S1] 这能补上实验工具常缺少的物理语义层。
+
+然而，Rerun 不公开宣称替代模型 registry、experiment governance、HPO、GPU scheduler、在线 serving 或安全评测。把它与实验追踪工具组合使用，比“一把替换所有 MLOps”更符合其公开边界。对机器人公司，最有价值的是让训练、评测和现场数据的诊断使用同一记录模型，而不是强迫所有工程流程迁移到一个年轻平台。
+
+### 4.4 与湖仓：语义与 chunk 模型的优势，也可能成为迁移成本
+
+Rerun 的论点是，机器人数据的不同频率与不同体量不适合传统稠密表：相机帧、点云、IMU 与后处理的时序本来就不对齐。其 column chunks 旨在分别存放/查询不同 streams，同时保持 semantic metadata；RRD 依赖 Arrow 以支持 DataFusion、Pandas、Polars 等路径。[S3][S5] 这非常贴合机器人数据的物理事实。
+
+反方是：企业已有对象存储、Parquet、lakehouse、权限和 ETL 投资。Rerun 若不能很好地接入、导出或让用户掌控自己的 storage，可能成为又一个需要同步的 vertical silo。Hub 的对象存储与选择性 streaming 路线是一种合理回应，但它处于 private preview；是否能在企业规模、跨区域和高并发训练下实现承诺，尚无公开独立验证。[S5]
+
+### 4.5 社区采用与商业客户必须分开
+
+公司官方资料提到 Meta、Google、Hugging Face LeRobot 和 Unitree 在“open-source work”采用其 visualization。[S6] 这可以支持两个判断：Rerun 的 API/Viewer 足以进入重要 Physical AI 开源项目；开源策略可能帮助它获得开发者心智。它不能支持“这些大公司是 Hub 客户”“他们支付订阅费”“他们贡献多数收入”或“存在独家合作”。
+
+同样，首页的社区引语、案例和开源嵌入说明用户体验与生态传播，不代表收入与订单。投资决策应要求公司分开披露：活跃开源用户、下载/部署、Hub design partners、付费账户、ARR、存储规模、单位经济性、上云/自托管比例、净留存和企业采购周期。
+
+## 五、横纵交汇：Rerun 的机会在于把可视化变成数据系统的入口，而不是把 Viewer 卖成终局
+
+Rerun 的历史连贯性很强。创始人先从“看不见数据会让计算机视觉团队变慢”的亲身体验出发，做了开源 logging/Viewer；随后引入 RRD/Arrow、catalog、query/transform、MCAP/ROS、dataloader 和 Hub。[S3][S4][S5][S14] 今天它在 Physical AI 数据栈中最有说服力的地方，正是这些能力共用一个数据模型：同一个 rollout 既能被调试，又能被 SQL 查询、重新分段、审阅并送进训练。
+
+但这条连续性也不是护城河的自动证明。开发者喜欢 Rerun 并不等于企业愿意把对象存储、权限与关键训练数据访问交给 Hub；数据模型统一也不等于所有客户的 ROS、仿真、标注和 lakehouse 都愿意统一。公司必须在“开源可控、可嵌入、无锁定”的承诺与“商业 Hub 提供值得付费的协作、目录、性能和治理”之间建立可信边界。[S5][S6]
+
+### 5.1 三种情景
+
+**最可能情景：成为机器人研发的开源视觉诊断与数据准备层。** SDK、Viewer、RRD、MCAP/ROS 支持和 dataframes 在开发、评测、调试和部分训练准备中被更多团队采用；企业仍把身份、主数据、对象存储和大部分训练平台保留在自有云。Rerun 以专业支持、Hub/private deployment 或协作功能逐步转化少数深度用户。
+
+**乐观情景：Hub 成为 Physical AI 的共享 catalog/访问层。** 若 object storage 上的选择性 chunk streaming、catalog、dataset review、query/transform 与 PyTorch/LeRobot 接入在大规模生产中稳定运行，Rerun 可从“开发者可视化工具”成为连接 collection、curation 与 training 的数据控制面。[S5][S10] 形成网络效应的前提不是 SDK 下载量，而是 dataset schema、工具生态、团队协作和训练读取都在同一数据层积累迁移成本。
+
+**危险情景：开源采用很广，商业化却被工具碎片化和湖仓吸收。** ROS/Foxglove/自研播放器解决现场调试，W&B/TensorBoard 解决训练实验，湖仓解决存储/治理，客户用若干脚本连接它们；Rerun 的 Viewer 被当成有价值但免费的小组件。Hub 若无法明确提供安全、性能、成本与协作上的增量价值，或者数据格式/API 演进引入迁移风险，开源影响力未必转化为可持续收入。
+
+## 六、面向人形机器人公司的行动建议
+
+### 6.1 采购：从本地/自托管数据诊断 P0 开始
+
+建议做 6—8 周 P0，选择一个真实但可脱敏的闭环：例如一次 manipulation/locomotion 失败分析，或一个 VLA policy 的评测回放。输入应包含相机/深度、点云、IMU、关节/力矩、控制动作、时钟、标定、环境/任务状态、推理输出和人工复核标签；并同时导入至少一段 MCAP/ROS 2 与一段内部自定义数据。考核指标包括导入/映射工程量、时间与空间对齐准确性、Viewer 的故障定位效率、SQL/dataframe 查询、内存与存储开销、导出至现有训练格式、权限与审计，以及退出时导出原始/派生数据的完整性。
+
+第一阶段应优先使用开源 SDK、本地 RRD/自托管 catalog，避免把敏感现场视频、语音、地图、员工个人信息或模型权重直接送入未完成安全审查的云服务。MCAP 的 custom messages、tf transforms 和 ROS1 边界需逐项测试；公司自己也将相关支持标为早期/持续开发。[S7]
+
+### 6.2 Hub：只在商业与安全门槛被证实后扩大
+
+若 P0 证明 Rerun 的数据模型确能降低调试和数据准备摩擦，再对 Hub 做小范围商业尽调。所需材料至少包括：private preview 的实际 availability、部署/数据地域、认证、DPA、KMS、RBAC、审计日志、对象存储账户与数据 ownership、delete/export、API 稳定性、性能/SLA、定价和 egress 成本。Rerun Hub 当前公开口径是 private preview，不应以路线图写入关键训练数据的生产承诺。[S5]
+
+### 6.3 投资、并购与自研边界
+
+**投资：P1 战略观察。** 正面证据包括创始团队对视觉/物理数据工具的长期经验、开源 SDK/Viewer、可解释的数据模型、pre-seed + seed 融资、MCAP/ROS/LeRobot/PyTorch 接口以及 Hub 的商业方向。[S5][S6][S9][S10][S14] 负面/未知项包括 Hub 转化、收入/毛利、存储与云成本、客户集中度、数据治理、开源许可证商业边界、格式锁定、支持能力与竞争者整合速度。
+
+**并购：不启动。** Rerun 的价值来自开源生态信任、跨公司中立性和一个小而深的数据模型/工具团队；收购可能打击社区采用，同时也无法立即获得本公司机器人数据、标注能力或训练平台。只有当 P0 证明其是本公司数据闭环不可替代的核心层，并能获得明确 IP、团队、Hub 控制面和开源治理权利时，才值得重新评估。
+
+**自研：保留业务语义与治理。** 本公司应自研或强控制数据权属、采集协议、标签标准、质量门槛、隐私/合规、任务与失败 taxonomy、训练数据选择策略、模型评估与边缘运行时。可采购/开源采用的部分是通用时空数据可视化、recording、query/transform 基础和部分 dataloader 接入。Rerun 可以缩短工程循环，但不替代机器人数据战略。
+
+## 七、合作网络、冲突与待验证事项
+
+### 7.1 必须拆开的关系网络
+
+| 关系类型 | 已公开对象/证据 | 可确认关系 | 不可推导内容 |
+|---|---|---|---|
+| 投资方 | Costanoa、Seedcamp、Point Nine、Sunflower Capital 及公开列出的天使。[S6][S14] | 参与 pre-seed 或 seed。 | 当前持股、董事席位、估值、优先权与可用现金。 |
+| 开源采用/生态 | Meta、Google、Hugging Face LeRobot、Unitree。[S6] | 公司称其开源工作使用 Rerun visualization。 | 付费客户、Hub 用户、数据/模型合作、订单或投资关系。 |
+| 技术兼容/生态 | ROS 2、MCAP、Apache Arrow、DataFusion、Pandas、Polars、PyTorch、LeRobot、对象存储。[S3][S5][S7][S9][S10] | 公开的格式、SDK、导入/导出或查询/训练接口。 | 独家认证、商业分成、SLA 或完整端到端兼容。 |
+| 创始/人才渊源 | Nikolaus West、Moritz Schiebold、Emil Ernerfeldt；Volumental。[S14] | 共同创办 Rerun，及早期共同工作经历。 | 当前股权、全部人员、IP 归属或前雇主权利。 |
+| 云/商业产品 | Rerun Hub 与 design/private-preview 用户。[S5][S6] | 公司公开称正在构建/预览商业 catalog/storage engine。 | 已商业化规模、客户名单、收入、数据规模或 SLA。 |
+
+### 7.2 冲突、未知项与证伪条件
+
+| 议题 | 支持证据 | 缺口/冲突 | 对结论与下一步 |
+|---|---|---|---|
+| 公司主体 | 隐私政策和版权写 Rerun Technologies AB。[S11] | 未核验公司登记、关联主体、IP/云服务合同实体。 | 交易/采购前取得公司与合同文件。 |
+| 开源采用 | 官方列举多个重要开源生态项目采用 visualization。[S6] | 未披露付款、Hub 使用、生产规模或收入。 | 只作为技术采用线索，不作为客户/订单证据。 |
+| Hub 商业化 | 官方称 Hub 为商业 catalog/storage engine。[S5] | private preview；公开缺 DPA、SLA、价格、客户与规模。 | 先做安全/商业尽调与小范围试用。 |
+| 训练能力 | PyTorch dataloader、LeRobot export 文档存在。[S9][S10] | dataloader experimental；不含训练/数据采买/标注服务。 | 归入数据基础设施，保持现有训练框架与数据治理。 |
+| MCAP/ROS 兼容 | 支持常见 ROS 2 messages 与分层导入。[S7] | custom messages、tf、ROS1 等限制明确。 | 用真实 topic/transform/时间同步 POC 验证。 |
+| 格式与迁移 | RRD/Arrow/dataframe/导出机制公开。[S3][S9] | Rerun schema、catalog/blueprint 语义与版本 API 仍可能产生锁定。 | 测试原始数据、派生数据和可视化配置的可导出性。 |
+
+## 八、来源审计表
+
+| 编号 | 来源 | 等级 | 本报告使用范围 |
+|---|---|---|---|
+| S1 | [Rerun 官网](https://rerun.io/)（访问于 2026-08-11） | 一手官网 | 当前工作流、社区展示与供应商自述；不作收入证明。 |
+| S2 | [Rerun：What is Rerun](https://rerun.io/docs/overview/what-is-rerun)（访问于 2026-08-11） | 一手技术文档 | SDK、RRD、catalog、训练数据来源与目标用户范围。 |
+| S3 | [Rerun RRD 格式](https://rerun.io/docs/concepts/logging-and-ingestion/rrd-format)（访问于 2026-08-11） | 一手技术文档 | RRD、Arrow RecordBatch、footer index 与格式边界。 |
+| S4 | [Rerun OSS beta](https://rerun.io/blog/oss-beta)（2023-02-15） | 一手公告 | 公测、开源贡献与早期使用性质。 |
+| S5 | [A new data layer for robot learning / Rerun 0.32](https://rerun.io/blog/data-layer-for-robot-learning)（2026-05-13） | 一手产品公告 | 数据层、chunk API、catalog、dataloader 与 Rerun Hub private preview。 |
+| S6 | [Rerun：The Missing Data Infrastructure for Physical AI](https://rerun.io/blog/physical-ai-data)（2025-03-19） | 一手融资/战略文章 | $17M seed、投资方、开源采用和商业平台的早期边界。 |
+| S7 | [Rerun 实验性 MCAP 支持](https://rerun.io/blog/introducing-experimental-support-for-mcap-file-format)（2025-09-23） | 一手技术公告 | ROS 2/MCAP 导入、语义层及明确限制。 |
+| S8 | [Rerun 0.27](https://rerun.io/blog/release-0.27)（2025-11-18） | 一手版本公告 | coordinate frames、server、blueprint 与时间控制演进。 |
+| S9 | [Rerun 导出 LeRobot 数据集](https://rerun.io/docs/howto/query-and-transform/lerobot_export)（访问于 2026-08-11） | 一手技术文档 | 用户数据到 LeRobot 的 mapping/export 边界。 |
+| S10 | [Rerun Train](https://rerun.io/docs/concepts/train)（访问于 2026-08-11） | 一手技术文档 | experimental PyTorch dataloader 与训练读取接口。 |
+| S11 | [Rerun 隐私政策](https://rerun.io/privacy)（更新于 2026-06-19） | 一手法律页面 | Rerun Technologies AB 主体和隐私边界。 |
+| S12 | [Rerun catalog object model](https://rerun.io/docs/concepts/query-and-transform/catalog-object-model)（访问于 2026-08-11） | 一手技术文档 | datasets/segments/layers 与 catalog 数据变更模型。 |
+| S13 | [TechCrunch：Rerun 获 $17M seed](https://techcrunch.com/2025/03/20/reruns-open-source-ai-platform-for-robots-drones-and-cars-revs-up-with-17m-seed/)（2025-03-20） | 权威媒体原创报道 | 融资累计口径、成立年份与团队背景的二手交叉验证。 |
+| S14 | [Starting Rerun](https://rerun.io/blog/starting-rerun)（公司早期文章） | 一手创始人文章 | 创始团队、Volumental 渊源、320 万美元 pre-seed。 |
+
+### 方法说明
+
+本报告按横纵分析法，沿时间追踪 Rerun 从计算机视觉可视化工具、OSS beta、RRD/Arrow 数据模型、ROS/MCAP 接入到 catalog、dataloader 与 Hub 的扩展，并与 ROS 可视化、实验管理、湖仓和数据采集/标注服务进行同期比较。开源采用、技术兼容、private preview 与付费商业化均按不同证据等级处理。
+
+## 九、产业链分类复核（报告末尾结论）
+
+**主分类：`7 数据服务`（中高置信）。** Rerun 的承重价值是让 Physical AI 的多模态数据被记录、可视化、查询、变换、审阅、导出和训练读取；SDK、RRD、catalog、DataFrame/SQL、dataloader 与 Hub 都服务于数据生命周期与研发数据闭环。[S2][S3][S5][S10]
+
+**不设正式次分类。** Rerun 虽提供 PyTorch dataloader、LeRobot export 与训练数据访问，但不训练模型、没有公开模型训练框架/推理框架产品，也没有公开的人工标注、数据采集或训练数据售卖服务。[S9][S10] 因此不应因“Train”菜单将其归为 `5.1 训练框架`，也不应将开源生态采用误写为数据服务订单。
+
+**分类限制。** Rerun Hub 代表其可能向商业数据平台发展，但公开定位仍为 private preview；在企业治理、规模化服务和商业客户得到验证前，最准确的定位仍是 Physical AI 数据工具与数据基础设施，而不是成熟托管数据湖或通用云服务。[S5]

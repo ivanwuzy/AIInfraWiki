@@ -1,0 +1,110 @@
+AutoDL帮助文档
+跳转至
+API文档
+¶
+API服务端HOST地址为：
+https://api.autodl.com
+鉴权
+¶
+token获取位置： 控制台 -> 设置 -> 开发者Token
+headers = {"Authorization": "token"}
+获取账户余额
+¶
+请求
+¶
+POST
+/api/v1/dev/wallet/balance
+请求参数：无
+响应
+¶
+响应参数：
+参数
+数据类型
+备注
+code
+String
+响应代码，成功时为Success
+msg
+String
+错误信息，成功时为空
+data
+Response对象
+Response对象参数：
+参数
+数据类型
+备注
+assets
+Int
+当前余额。除以1000等于元
+accumulate
+Int
+累计消费金额。除以1000等于元
+voucher_balance
+Int
+当前代金券可用余额。除以1000等于元
+样例：
+{
+"code": "Success",
+"data": {
+"assets": 1000,
+"accumulate": 1000,
+"voucher_balance": 1000,
+},
+"msg": ""
+}
+Python代码
+import requests
+headers = {
+"Authorization": "您的token"
+}
+url = "https://api.autodl.com/api/v1/dev/wallet/balance"
+response = requests.post(url, headers=headers)
+print(response.content.decode())
+¶
+保存镜像
+¶
+切换专用NFS/文件存储
+¶
+请求
+¶
+POST
+/api/v1/dev/exclusive_nfs/mount
+请求参数：
+参数
+数据类型
+备注
+data_center
+String
+指定地区代码，可查询弹性部署API文档附录
+mountable
+Int
+设置为1表示挂载专用NFS，即关闭挂载普通文件存储；设置为-1即关闭专用NFS，即切换普通文件存储
+响应
+¶
+响应参数：
+参数
+数据类型
+备注
+code
+String
+响应代码，成功时为Success
+msg
+String
+错误信息，成功时为空
+样例：
+{
+"code": "Success",
+"msg": ""
+}
+Python代码
+import requests
+headers = {
+"Authorization": "您的token"
+}
+body = {
+"data_center": "westDC2",
+"mountable": 1,
+}
+url = "https://api.autodl.com/api/v1/dev/exclusive_nfs/mount"
+response = requests.post(url, json=body, headers=headers)
+print(response.content.decode())

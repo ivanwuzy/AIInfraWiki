@@ -1,0 +1,62 @@
+/*
+AnuPpuccin Rainbow Force Fix
+Purpose: make rainbow folder colors visibly apply in current Obsidian file explorer.
+Safe to disable from Settings → Appearance → CSS snippets.
+*/
+
+/* 6-color cycle, using AnuPpuccin/Catppuccin RGB variables when available. */
+.nav-files-container .nav-folder-children > .nav-folder:nth-child(6n + 1),
+.nav-files-container > div > .nav-folder:nth-child(6n + 1) {
+  --rainbow-folder-color: var(--ctp-red, 210, 15, 57);
+}
+
+.nav-files-container .nav-folder-children > .nav-folder:nth-child(6n + 2),
+.nav-files-container > div > .nav-folder:nth-child(6n + 2) {
+  --rainbow-folder-color: var(--ctp-peach, 254, 100, 11);
+}
+
+.nav-files-container .nav-folder-children > .nav-folder:nth-child(6n + 3),
+.nav-files-container > div > .nav-folder:nth-child(6n + 3) {
+  --rainbow-folder-color: var(--ctp-yellow, 223, 142, 29);
+}
+
+.nav-files-container .nav-folder-children > .nav-folder:nth-child(6n + 4),
+.nav-files-container > div > .nav-folder:nth-child(6n + 4) {
+  --rainbow-folder-color: var(--ctp-green, 64, 160, 43);
+}
+
+.nav-files-container .nav-folder-children > .nav-folder:nth-child(6n + 5),
+.nav-files-container > div > .nav-folder:nth-child(6n + 5) {
+  --rainbow-folder-color: var(--ctp-blue, 30, 102, 245);
+}
+
+.nav-files-container .nav-folder-children > .nav-folder:nth-child(6n + 6),
+.nav-files-container > div > .nav-folder:nth-child(6n + 6) {
+  --rainbow-folder-color: var(--ctp-mauve, 136, 57, 239);
+}
+
+/* Force visible folder title/collapse/indent recolor when AnuPpuccin rainbow mode is active. */
+body.anp-simple-rainbow-color-toggle .nav-files-container .nav-folder > .nav-folder-title {
+  color: rgb(var(--rainbow-folder-color)) !important;
+  --nav-item-background-hover: rgba(var(--rainbow-folder-color), 0.12);
+  --nav-item-background-active: rgba(var(--rainbow-folder-color), 0.16);
+}
+
+body.anp-simple-rainbow-color-toggle .nav-files-container .nav-folder > .nav-folder-title .tree-item-icon,
+body.anp-simple-rainbow-color-toggle .nav-files-container .nav-folder > .nav-folder-title .collapse-icon,
+body.anp-simple-rainbow-color-toggle .nav-files-container .nav-folder > .nav-folder-title svg {
+  color: rgb(var(--rainbow-folder-color)) !important;
+  --icon-color: rgb(var(--rainbow-folder-color)) !important;
+  --nav-collapse-icon-color: rgb(var(--rainbow-folder-color)) !important;
+  --nav-collapse-icon-color-collapsed: rgb(var(--rainbow-folder-color)) !important;
+}
+
+body.anp-simple-rainbow-color-toggle .nav-files-container .nav-folder > .nav-folder-children {
+  border-color: rgba(var(--rainbow-folder-color), 0.45) !important;
+}
+
+/* Optional: make Full rainbow mode more visible too. */
+body.anp-full-rainbow-color-toggle .nav-files-container > div > .nav-folder,
+body.anp-full-rainbow-color-toggle .nav-files-container > .nav-folder-children > .nav-folder {
+  background-color: rgba(var(--rainbow-folder-color), 0.14) !important;
+}

@@ -1,0 +1,179 @@
+# Moreh 横纵分析报告
+
+> 研究对象：Moreh, Inc.（简称 Moreh；用户指定为美国特拉华州注册主体）  
+> 研究截止日：2026-08-11｜对象类型：异构加速器上的 LLM 推理软件、性能库与集群级推理框架｜研究目的：为人形机器人公司的推理部署、异构芯片适配、供应安全与投资／并购决策提供输入  
+> 证据纪律：官网、技术报告、新闻稿与转载可证明产品主张、基准条件、融资／合作线索；均不自动证明客户订单、收入、跨厂商生产稳定性、完整训练能力或芯片供给。芯片适配、开源项目、PoC、联合展示和正式客户部署须分别记录。
+
+## 摘要与结论先行
+
+**Moreh 的当前主产品是面向 AMD GPU、Tenstorrent 加速器及部分 NVIDIA／AMD 混合环境的 LLM 推理软件。**它从自定义 kernel、GEMM／attention／MoE 和通信库，向 Moreh vLLM、MoAI Performance Gateway、MoAI Fabric 和 MoAI Inference Framework 逐层组合，目标是把异构芯片用于推理的代价降下来。[R1][R2][R3][R4]
+
+最准确的定位不是“跨厂商训练平台”或“通用 CUDA 替代品”，而是**以推理框架为收入与交付中心、以芯片后端优化为支撑的异构推理软件公司**。官网称其可通过单 API 把不同厂商／代际芯片组织为推理集群，并宣称跨厂商 prefill-decode（PD）解耦；但对产品的生产客户、商用可用区、硬件组合覆盖、故障边界和大规模稳定性披露有限。训练支持主要见于 Tenstorrent 联合方案与历史路线，尚不足以把它归为已充分验证的分布式训练工具。[R2][R5]
+
+对人形机器人公司，建议是**将 Moreh 纳入 AMD 或 Tenstorrent 推理替代路线的受控 PoC，优先测试 VLA／多模态模型的 serving 成本与跨芯片 PD 场景；不建议在验证前押注投资、并购或把生产推理切换到单一新软件栈。**需要看到可复现实验、模型精度、P99 延迟、失败切换、可观测性、软件支持和知识产权边界，而不是只看 TPS 或“比 NVIDIA 更高效”的宣传数字。
+
+## 研究问题、主体与商业边界
+
+官网页脚标示 Moreh, Inc.，与用户给定的美国特拉华州注册主体一致；本报告不将其韩国／越南运营实体、子公司或合作方自动并入该主体的股权、收入和 IP。[R1] 研究问题是：Moreh 到底交付什么软件；其异构能力处于产品、PoC 还是商业规模的哪一层；对机器人推理和芯片策略的实际价值是什么。
+
+当前官网的产品层次为：
+
+- **Moreh vLLM for AMD／Tenstorrent**：面向特定加速器的 serving runtime／后端优化；
+- **Moreh Libraries**：面向 GEMM、attention、MoE 与通信的定制 kernel／库；
+- **MoAI Performance Gateway**：在数据中心内部对请求、PD 解耦和异构资源做路由；
+- **MoAI Fabric**：在不同芯片间处理 KV cache 的传输与格式／量化／并行布局转换；
+- **MoAI Inference Framework**：把上述组件、调度、自动扩缩和推理端点组合起来。[R1][R2][R3][R4]
+
+这证明公司在做从芯片到集群的推理软件，并不证明它拥有 AMD、NVIDIA 或 Tenstorrent 芯片／集群，也不证明客户可把任意训练框架和全部模型“一键迁移”。官网列出的硬件、模型与性能应视为支持范围和厂商测试主张；最终兼容性取决于具体模型、算子、量化、网络、并行策略及版本组合。
+
+## 一、纵向分析：从韩国超算软件研究到异构推理产品化
+
+### 1. 2020—2021：研究团队的并行软件起点
+
+Moreh 官网称团队成立于 2020 年，2021-02 在美国注册总部并完成 Series A 融资（未披露金额）。CEO／联合创始人 Gangwon Jo 的履历包括逾十年 HPC 研究、韩国首台 GPU 超算 Chundoong 的首席架构经历；联合创始顾问 Jaejin Lee 任首尔大学教授、Thunder Research Group 负责人。[R6] 这构成团队擅长并行计算和加速器软件的背景，但不自动等于公司拥有首尔大学 IP、客户或排他技术许可。
+
+公司当时的主张是 MoAI 软件栈，历史报道将其描述为类似 CUDA、可与 PyTorch／TensorFlow 等框架衔接的 AI 软件工具。[R7] 这个“类似 CUDA”是媒体转述与公司定位，不是已满足本库 `2.1 CUDA-like` 五项硬条件的证明。公开页面没有给出跨代完整驱动／runtime、编译器、外部设备编程 API、通信库、开发者社区及真实部署的系统性证据，故不纳入 2.1。
+
+### 2. 2021—2023：先在 KT／AMD 路线获得商业与资本线索
+
+官网时间线称，2021-12 Moreh 与 KT Cloud 基于 AMD GPU 商业化公共 AI 云服务；2023-01 向 KT Cloud 交付大规模 GPU 基础设施用于 LLM 研发，并称累计收入超过 400 亿韩元。[R6] 这些是公司自述的商业化节点。没有取得审计报表、客户合同、收入拆分或回款资料，故不能把“40 billion KRW cumulative revenue”替换为可审计收入，也不能推断其全部由软件许可产生。
+
+2023-07，KT 与 KT Cloud 宣布合计投资 150 亿韩元（报道折合约 1,160 万美元），其中 KT 投资 100 亿韩元、KT Cloud 投资其余部分。[R8] 同年 10 月，TechCrunch 报道 Moreh 完成 **2,200 万美元 Series B**、累计融资 3,000 万美元，AMD 与 KT 为投资方；该材料可交叉确认融资总额，但需警惕 150 亿韩元很可能是该 Series B 中的投资或阶段性披露，不能与 2,200 万美元机械相加。[R7][R8]
+
+这一阶段将公司与 AMD／KT 生态深度绑定：一方面带来非 NVIDIA 路线的真实工程机会，另一方面也使投资者、云合作、基础设施交付和软件收入的边界变得重要。对外部投资人，最需要的不是“AMD 和 KT 支持”的泛化结论，而是每条产品线的合同主体、经常性软件收入、项目制集成收入和知识产权归属。
+
+### 3. 2024：Tenstorrent 联合研发把“训练＋推理”扩展为方向，而非既成事实
+
+2024-11，Moreh 与 Tenstorrent 宣布战略合作，计划将 Tenstorrent NPU 与 Moreh 软件结合开发 AI 数据中心方案；公告称双方过去两年有讨论和联合研发，目标方案“expected to be commercialized by the first half of 2025”，并主张支持推理和 LLM 训练。[R5] 这是有明确时间、对象和技术方向的合作，但“预计商业化”不能写成已完成交付或正式订单。
+
+该合作的深层意义在于 Moreh 不再只想在 AMD GPU 上做工具，而是尝试把其并行软件经验移植到非 GPU 加速器。风险也更高：芯片后端、内存模型、通信、算子、框架兼容与客户支持都要重建。它与 NVIDIA 的竞争不是把同一 API 编译一下就结束，而是要在模型正确性、性能、调试性和生态工具上长期承担差异。
+
+### 4. 2025—2026：产品焦点从“MoAI 平台”收敛到推理、PD 解耦与跨厂商 Fabric
+
+2025-09，Moreh 与 SGLang 在 AI Infra Summit 展示 AMD 上的分布式推理系统，并称与若干领先 LLM 公司进行 PoC。[R9] 这证明有展示和 PoC 线索，不等于这些 LLM 公司已成为付费客户，更不能当作大规模收入。2025-11，Moreh 与 Tenstorrent 在 SC25 展示联合方案，将 MoAI Framework 与 Galaxy Wormhole 服务器结合，称支持大规模推理和训练。[R10] 仍应视为联合方案发布；未披露付费客户、验收或规模化运行数据。
+
+截至研究截止日的官网则更明确地把自己称为 “Inference software company”。MoAI Inference Framework 宣称通过单 API 自动配置异构资源、PD 解耦、按请求长度路由和自动扩缩；Fabric 处理跨厂商 KV cache 的内存布局、数据类型／量化和并行切分差异；AMD vLLM 是可替换 vLLM 的 container 化 serving runtime。[R1][R2][R3][R4] 这是一条合理的产品化路径：把高门槛的 kernel 适配转化为能被数据中心调用的 API 和集群调度层。商业化是否跟上，仍缺客户、定价、留存和 production SLA 证据。
+
+### 融资历史
+
+| 时间 | 事件 | 金额／口径 | 已知投资方／主体 | 研究处理 | 证据 |
+|---|---|---:|---|---|---|
+| 2021-02 | Series A、美国总部注册 | 金额未披露 | 未披露 | 只确认事件，不补估值／金额 | B，[R6] |
+| 2023-07 | KT／KT Cloud 投资 | 150 亿韩元；报道约 1,160 万美元 | KT 100 亿韩元、KT Cloud 50 亿韩元 | 可能是 Series B 的组成，不与后者重复累计 | B，[R8] |
+| 2023-10 | Series B | 2,200 万美元；报道称累计 3,000 万美元 | AMD、KT 等 | 以媒体转述的公司披露记录；不推断股份或估值 | B，[R7] |
+
+公开一手资料未见后续融资轮、完整 cap table 或审计现金流，故不对当前估值和融资余额下结论。
+
+## 二、产品、性能与拆分关系网络
+
+### 1. 产品能力和证据边界
+
+Moreh vLLM for AMD 宣称使用替换后的 compute backend、定制 GEMM／attention／MoE 库、图级执行、量化与多 GPU 优化，并在其列举的 DeepSeek、Llama、Qwen 等模型／AMD Instinct GPU 上提供 presets；网页以 ROCm vLLM 和 SGLang 作为比较基线，部分情形声称最高约 2 倍吞吐。[R4] 这是配置与基准口径，不是所有模型、上下文、并发、版本或集群规模下的普遍性能承诺。真实采购应复现请求长度、并发、batch、精度、prefill／decode、网络与故障条件。
+
+MoAI Framework 的跨厂商 PD 主张涉及非常难的工程问题：KV cache 不是只要跨网卡传字节，还涉及注意力实现、内存布局、数据类型、量化与张量并行切分。Moreh Fabric 正是把这些转换列为产品功能。[R3] 因此它具有差异化潜力，但也意味着“不同厂商可统一路由”远不等于所有 CUDA／ROCm／Tenstorrent 环境都兼容、成本更低或稳定达到生产 SLA。官网仍列 Autopilot 为 `coming soon`，应从已交付功能中剥离。[R2]
+
+### 2. 五类关系网络
+
+| 网络层 | 实体／群体 | 已公开关系 | 可以支持的结论 | 不能支持的结论 | 证据 |
+|---|---|---|---|---|---|
+| 投资方／股东 | AMD、KT | TechCrunch 报道为 Series B 投资方 | 有融资关系线索 | 持股、董事席位、芯片独家采购或客户订单 | B，[R7] |
+| 投资方／股东 | KT、KT Cloud | 2023-07 公告投资 150 亿韩元 | 有具体投资金额与主体 | 全部融资之外的新独立轮、控制权 | B，[R8] |
+| 客户／订单 | KT Cloud | 官网称交付大规模 GPU 基础设施、共同商业化 AMD 云服务 | 有公司自述的商业／交付关系 | 合同金额、软件收入、当前续约、排他性 | B，[R6] |
+| 客户／订单 | StepFun、某韩国电信公司 | AMD vLLM 页面称做过私有模型优化，且一方被匿名 | 有供应商自述的优化客户案例线索 | StepFun 完整采购范围、匿名电信公司身份／金额、长期收入 | B，[R4] |
+| 产业／芯片合作 | Tenstorrent | 2024 战略合作、联合研发；2025 SC25 联合方案 | 有技术合作与方案展示 | 已形成大规模订单、所有客户部署或独家关系 | A/B，[R5][R10] |
+| 技术／开源生态 | SGLang、AMD ROCm、vLLM、llm-d、SkyPilot | 官网列生态贡献／兼容，SGLang 有联合展示 | 有开源协同或技术接入线索 | 对方背书、共同销售、收入分成或客户转介 | B，[R1][R9] |
+| 高校／科研渊源 | 首尔大学、Thunder Research Group | 多位成员履历与团队研究渊源 | 有人才／研究来源 | SNU 对 Moreh 产品、专利或收入有权利 | B，[R6] |
+
+### 3. 收入承载的审慎判断
+
+公开产品更像企业软件许可、支持、性能优化／定制工程及与芯片／云伙伴共同交付的解决方案，而不是售卖芯片或通用 GPU 云。现有页面没有公开定价、合同形式、ARR、毛利、SaaS／服务占比或客户留存。2023 年的累计收入自述也可能包含云和基础设施交付；因此不能把它直接估作“推理框架订阅收入”。[R6]
+
+## 三、横向分析：异构推理很有价值，真正困难在生产一致性
+
+### 1. 对比路径
+
+| 路径／代表 | 用户购买／使用的核心 | 相对 Moreh 的主要差异 | 采购时的关键问题 |
+|---|---|---|---|
+| Moreh | 芯片后端优化、vLLM、跨厂商 PD、KV cache Fabric、集群推理框架 | 主攻 AMD／Tenstorrent 与异构 GPU，试图把 kernel 到路由打通 | 对目标 VLA／MLLM 的精度、P99、运维与跨厂商 KV 传输能否复验？ |
+| vLLM／SGLang | 开源 serving engine 和调度／推理运行时 | 社区生态、可迁移性与上游节奏较强；特定非 NVIDIA 后端性能需单独验证 | Moreh 增量性能和商业支持是否足以覆盖分叉／迁移成本？[R11][R12] |
+| NVIDIA TensorRT-LLM／NIM | NVIDIA 深度优化的推理 stack 与生态 | 在 NVIDIA 硬件上软硬协同与工具成熟度高，但更依赖 NVIDIA 路线 | 目标场景是否真的需要跨厂商替代，还是应优先用成熟 NVIDIA 栈？[R13] |
+| AMD ROCm＋vLLM／SGLang | AMD 基础软件和开源推理栈 | 可直接作为 Moreh 的基线与替代；硬件软件生态仍在快速演进 | Moreh 的 kernels、通信和支持能否在总 TCO 上胜过原生组合？[R14] |
+| 自建异构路由／PD | 自有调度、缓存、模型服务与硬件接口 | 控制权高，但需要维护 KV 格式、性能回归、故障语义和多厂商升级 | 能否把这部分工程作为长期核心能力，还是交给专门供应商？ |
+
+Moreh 的生态位在“非 NVIDIA／混合硬件的生产推理效率”。它不是以训练框架、通用集群管理或多云算力池为主要交付物。相比只优化单设备的推理 runtime，PD 解耦、跨代／跨厂商 KV 转换和请求路由若能稳定商用，会让旧 GPU 与新加速器在同一推理服务里各司其职；但这也是最难被网页 benchmark 覆盖的部分。
+
+### 2. 竞争优势与短板
+
+优势是团队的 HPC／GPU 软件积累和针对异构硬件的产品分层：不只改 kernel，也把通信、缓存、路由和 cluster API 纳入同一个推理框架。[R2][R3][R6] 在 AMD、Tenstorrent 等寻求软件生态补足的时期，这种能力有战略稀缺性。
+
+短板有三类。第一，当前公开证据以公司 benchmark、产品页和共同展示为主，缺乏第三方长期生产数据；第二，跨厂商 PD 的正确性与时延对模型、量化和网络异常高度敏感，必须逐模型测试；第三，开源 vLLM、SGLang 和芯片厂商自身软件持续迭代，Moreh 必须在性能、易用性和支持中持续领先，才会获得可持续定价权。[R3][R4][R11][R12]
+
+## 四、横纵交汇：历史上的“适配能力”能否变成可收费的推理控制面
+
+Moreh 的历史路径从超算软件研究、AMD／KT 云和 GPU 基础设施交付出发，再进入 Tenstorrent 联合研发，最终把叙事收敛为异构 LLM 推理。这个历程解释了当前产品为什么同时有 kernel、vLLM、Fabric 和 gateway：它试图将过去项目中分散的设备适配和集群工程，封装为可重复交付的软件控制面。
+
+真正的分水岭在于从“能够让芯片跑起来”跨到“在生产流量下让异构芯片一起稳定赚钱”。前者可以用单模型 benchmark 展示；后者要求输入输出一致性、KV 转换正确性、SLO、回滚、观测、安全隔离、客户支持和持续的上游适配。Moreh 的合作和产品结构显示其正在攻克后者，但公开证据尚未证明已经跨过这一门槛。
+
+| 剧本 | 触发条件 | 对 Moreh 与机器人公司的含义 |
+|---|---|---|
+| 最可能：成为 AMD／Tenstorrent 推理优化的专业供应商 | Moreh vLLM 和定制优化在少数大模型客户中产生可复验性价比 | 适合做非 NVIDIA 推理的第二供应商，但需按模型／硬件 SKU 采购。 |
+| 最危险：功能被开源与芯片原生栈吸收 | ROCm、vLLM、SGLang、TensorRT-LLM 等快速补齐后端和 PD 能力，商业支持不能形成粘性 | 可使用开源基线，避免把服务 API／KV 格式锁死在单一供应商。 |
+| 最乐观：跨厂商 Fabric 在生产环境验证 | NVIDIA／AMD／Tenstorrent 混合 PD 可长期稳定运行并降低服务器数、TCO | 对机器人量产推理集群具有战略价值，可能支持投资／深度合作，但需严格验证。 |
+
+## 五、面向人形机器人公司的行动建议
+
+### 1. 采购／合作：做逐模型、逐芯片的 8—12 周推理 PoC
+
+优先选一个负载明确的 VLA、视觉语言模型或机器人云端推理服务，比较：NVIDIA TensorRT-LLM／vLLM 基线、AMD ROCm vLLM／SGLang 基线和 Moreh vLLM／MoAI。若评估混合 PD，应先在隔离环境用 NVIDIA prefill＋AMD decode（或反向）复验 KV cache 的数值一致性、长上下文稳定性、网络失败和重试语义；不应直接把生产机器人控制流接入异构 PD。
+
+验收指标包括：tokens/s、首 token 和 P99 inter-token latency、端到端成功率、模型精度／工具调用正确率、GPU／CPU／网络利用率、显存、节点故障恢复、负载变动下的自动扩缩、每百万 token 成本、版本回滚、监控与审计、模型／权重／提示词的数据隔离。所有性能数据需固定模型提交、量化、并发、输入／输出长度、GPU firmware、ROCm／CUDA 版本、网络和测试时间。
+
+### 2. 投资、并购与自研
+
+**投资：观察，等待生产证据。**触发条件是至少三个可访谈的付费推理客户、可审计的软件收入与续费、目标模型上的跨厂商生产 SLA、核心 kernel／Fabric IP 权属、对 vLLM／SGLang 等开源义务的清晰管理，以及 Tenstorrent 联合方案实际商业化。KT／AMD 投资、与 SGLang 展示或“几家 LLM 公司 PoC”均不满足这些条件。
+
+**并购：暂不建议。**公司价值主要是高端软件人才、芯片后端优化和可能的异构推理控制面；但这类能力与开源社区和芯片厂商软件深度耦合，客户合同、开源许可证和关键人才留任会决定可转移价值。机器人公司应先验证这套软件是否比自研／开源组合实质性降低生产推理成本，再讨论控制权溢价。
+
+**自研：保留抽象层，外采优化。**应自有 model serving API、可观测性、压测集、模型版本／数据治理和不同硬件的回退策略；可外采 Moreh 的 kernel、runtime 或优化服务，但要求标准 OpenAI API、容器／权重可迁移、KV cache 故障回退和不使用 Moreh 时的运行方案。不要把训练框架或集群调度核心逻辑误交给目前仍以推理为中心的供应商。
+
+## 六、冲突、不确定性与尽调问题
+
+| 议题 | 支持证据 | 反对证据／缺口 | 当前处理与下一步 |
+|---|---|---|---|
+| 是否为完整跨厂商平台 | Framework／Gateway／Fabric 皆声称支持异构芯片 | 公开资料未覆盖任意芯片、模型、网络和生产故障语义 | 只确认已公布 AMD、Tenstorrent、部分 NVIDIA 组合；逐 SKU 压测。[R2][R3] |
+| 是否拥有完整训练能力 | Tenstorrent 联合方案称支持 training＋inference | 当前官网明确定位 inference software；无训练框架文档、客户或复现证据 | 不归入 5.3；将训练保留为待验证方向。[R5][R10] |
+| 性能主张是否可横比 | 网站有具体 benchmark 和基线 | 多为公司测试，条件随模型／并发／版本变化 | 用同配置复现，不用网页最大倍数做采购承诺。[R4] |
+| 生态合作的商业强度 | Tenstorrent 战略合作；SGLang 联合展示；AMD／KT 投资 | 未披露订单、收入分成、排他、长期支持义务 | 分列为合作／投资／PoC，不写作客户订单。[R5][R7][R9] |
+| KT Cloud 和收入 | 公司称商业化云、交付基础设施、累计收入超 400 亿韩元 | 未见审计报表和软件／云／集成收入拆分 | 只作公司自述线索；尽调合同、验收与回款。[R6] |
+| 法人、IP 与地域 | 官网标 Moreh, Inc.；有韩国／越南实体与高校人才渊源 | 未见完整法人链、IP 许可、跨境数据／出口合规披露 | 交易前审查 Delaware 注册、专利、雇佣与开源合规。 |
+
+## 七、产业链分类复核
+
+**主分类：5.2 推理框架（高置信）。**Moreh 的当前产品、官网首页和商业叙事集中于 LLM inference：Moreh vLLM、MoAI Inference Framework、Performance Gateway、Fabric、PD 解耦、自动扩缩与 serving API 都服务于模型线上推理，而非训练框架。[R1][R2][R3][R4]
+
+**副分类：2.2 AI 算子开发、迁移与适配（中等置信）。**Moreh 的可收费差异化需要芯片专属 kernel、GEMM／attention／MoE、量化、图执行和 vLLM compute backend 适配；它还针对 AMD 和 Tenstorrent 把模型推理栈移植到非 NVIDIA 加速器。[R1][R4][R5] 这符合“为既有模型／框架做算子和后端迁移／适配”的价值创造，但不是一个完整 CUDA-like 平台，故不归 2.1。
+
+**不归入 5.3 分布式训练工具。**公司和 Tenstorrent 的联合方案提到训练，且团队有 HPC／并行软件背景；但截至研究截止日，公开的成型产品、文档、性能和客户线索均以 inference 为中心，没有充分证据证明其把分布式训练工具作为可重复、已商业化的核心交付物。[R2][R5][R10]
+
+## 信息来源与审计说明
+
+访问日期均为 2026-08-11。A 为 Moreh 官方新闻稿／产品页，B 为官方转载页面或媒体报道；性能和收入均保留原文口径。
+
+- [R1] Moreh 官网，https://moreh.io/ 。公司主体、当前推理软件定位、产品图谱、生态 logo 与性能宣传。
+- [R2] Moreh，MoAI Inference Framework，https://moreh.io/inference-framework/ 。异构推理、PD 解耦、API、支持模型／硬件及 Autopilot 状态。
+- [R3] Moreh，MoAI Fabric，https://moreh.io/fabric/ 。跨厂商 KV cache 转换与传输的技术主张。
+- [R4] Moreh，Moreh vLLM for AMD，https://moreh.io/moreh-vllm/ 。AMD 后端、benchmark 条件、支持范围及客户优化案例口径。
+- [R5] Moreh，`Moreh partners with Tenstorrent to challenge NVIDIA in AI data center market`，2024-11-18，https://moreh.io/news/press-release/moreh-partners-with-tenstorrent-to-challenge-nvidia-in-ai-data-center-market-241118/ 。联合研发、预计商业化和训练／推理方向。
+- [R6] Moreh，About，https://moreh.io/about/ 。成立／法人时间线、KT Cloud 商业化和收入自述、团队履历与科研渊源。
+- [R7] TechCrunch（经 Moreh 新闻页转载），`AMD and Korean telco KT back AI software developer Moreh in $22M Series B`，2023-10-26，https://moreh.io/news/amd-and-korean-telco-kt-back-ai-software-developer-moreh-in-22m-series-b-231026/ 。Series B、累计融资和 AMD／KT 投资线索。
+- [R8] Korea JoongAng Daily（经 Moreh 新闻页转载），`KT and KT Cloud invest 15B won in AI startup Moreh`，2023-07-23，https://moreh.io/news/kt-and-kt-cloud-invest-15b-won-in-ai-startup-moreh-230723/ 。KT／KT Cloud 投资额与拆分。
+- [R9] Moreh，`Moreh and SGLang team up to showcase distributed inference system on AMD...`，2025-09-11，https://moreh.io/news/press-release/moreh-and-sglang-team-up-to-showcase-distributed-inference-system-on-amd-at-ai-infra-summit-2025-250911/ 。联合展示、PoC 和合作的公司口径。
+- [R10] Moreh，`Moreh and Tenstorrent Unveil...`，2025-11-17，https://moreh.io/news/press-release/moreh-and-tenstorrent-unveil-scalable-cost-efficient-ai-data-center-solution-at-supercomputing-2025-251117/ 。SC25 联合方案；不证明客户订单。
+- [R11] vLLM 文档，https://docs.vllm.ai/ 。开源推理引擎可比路径。
+- [R12] SGLang，https://github.com/sgl-project/sglang 。开源推理／服务栈可比路径。
+- [R13] NVIDIA，TensorRT-LLM，https://developer.nvidia.com/tensorrt-llm 。NVIDIA 推理软件可比路径。
+- [R14] AMD ROCm，https://rocm.docs.amd.com/ 。AMD 原生基础软件可比路径。
+
+## 方法说明
+
+本报告采用横纵分析：纵轴追踪 Moreh 从 HPC 软件研究、KT／AMD 商业与资本线索、Tenstorrent 联合研发到异构推理产品化的演进；横轴对比开源 serving engine、NVIDIA 推理栈、AMD 原生软件与自建方案；交汇部分以人形机器人推理的成本、正确性、可用性和供应链替代性为判断约束。结论是阶段性研究判断，不替代软件审计、性能复现、开源许可证审查、数据安全评估或投资决策委员会审议。

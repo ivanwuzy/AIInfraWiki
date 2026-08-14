@@ -1,0 +1,229 @@
+# CAST AI（CAST AI Group, Inc.）横纵分析报告
+> 研究截止日：2026-08-11 ｜对象类型：Kubernetes 应用性能自动化与云资源优化平台 ｜研究主体：CAST AI Group, Inc.
+
+## 结论先行
+
+CAST AI 的承重能力不是“采购一批 GPU 再卖给客户”，也不是替代 Kubernetes 的通用控制平面，而是把工作负载资源画像、节点选择、bin-packing、rightsizing、spot/on-demand 策略、扩缩和重平衡做成对 Kubernetes 集群持续执行的自动化。公司把这一产品定义为 APA（Application Performance Automation）：不止显示成本与告警，而是基于性能信号修改资源配置和基础设施选择。[S5] 其公开 DPA 直接使用 **CAST AI Group, Inc.**；官网的公司页把 Yuri Frayman、Leon Kuperman、Laurent Gil 列为共同创始人，三人此前创办的 Zenedge 在 2018 年被 Oracle 收购。[S1][S9]
+
+截至本报告日，建议的主分类为 **`3.5 调度与编排软件`（高置信）**，次分类为 **`3.6 集群管理软件`（中高置信）**。2026 年公开的 OMNI Compute 使其出现了值得单列观察的 `4.1 跨厂商训推算力调度平台` 邻接能力：它声称可把其他账户、私有云或自有基础设施中的 GPU 节点通过 Crossplane、CRD 和 WireGuard 接入既有 Kubernetes 集群，并管理 placement 与 sharing。[S11] 但这是面向既有 Kubernetes 集群的跨云 GPU 节点接入与放置能力，且当前 onboarding 仍需人工支持；公开资料没有证明其为自主供给、统一签约/计费、可自由交易的多厂商算力池，故**不列入 `4.4 多厂商算力池`**。[S11]
+
+对人形机器人公司，CAST AI 适合作为云端训练、评测、数据处理或非实时推理 Kubernetes 集群的降本与可用性 POC 对象，尤其在 GPU 稀缺、预留容量分散、集群利用率不稳时有现实价值。它不应直接进入运动控制、安全闭环或设备端运行时；也不能仅凭“跨云 GPU”宣传就替代训练作业编排、模型运行时、跨云数据治理或供应链采购控制面。建议 **P0 采购验证、P1 战略观察，不启动并购或财务投资立项**。
+
+## 一、研究边界、主体与证据标准
+
+### 1.1 本报告研究的是什么
+
+CAST AI 的输入是客户已经在运行的 Kubernetes 集群、工作负载及其云/本地资源约束；其输出是对 CPU、内存、GPU 节点、实例型、扩缩、资源请求和工作负载落点的建议与自动化动作。官网目前以“实时、自主的 Kubernetes 与云应用性能优化”描述 APA，并明确列出 workload rightsizing、快速智能扩缩、闲置资源清理和多云基础设施组合选择。[S5] 这一定义决定了本报告把公司放在基础设施软件，而不是模型、芯片或单纯云账单可视化赛道。
+
+法律与交易上的主体也要与产品品牌分开看。客户数据处理附录标题为“CAST AI Group, Inc.”，有效日期为 2023-06-21，并把该公司定位为代表客户处理个人数据的 processor。[S9] 这足以支持本报告使用该公司全称，但不能证明最新 Delaware 登记状态、全部关联实体、知识产权归属、cap table 或每一份销售合同的签约主体；融资或并购前仍须用公司登记、董事会材料和合同复核。
+
+### 1.2 证据的使用边界
+
+- 产品页、技术页和新闻稿证明公开功能、公司自述的客户/规模或融资公告，不自动证明收入、毛利、续费或所有客户均获得同一效果。
+- 客户引语证明相应客户或员工曾公开表达使用体验；不能据此推导合同金额、所有区域的可用性或人形机器人负载的结果。[S1][S4]
+- “成本最高可降 80%”“自动选最优基础设施”等均是供应商主张或产品能力描述，采购前必须以本公司真实模型、作业、时延与故障条件复测。[S5]
+- 研究判断和机器人行动建议是本报告的推断，不是 CAST AI 承诺。
+
+## 二、纵向分析：从三位连续创业者的云账单焦虑，到 Kubernetes 自动化层
+
+### 2.1 起源：先经历云成本，才选择做自动化
+
+CAST AI 的创始叙事不是“为大模型训练而生”。官网回溯称，Zenedge 被 Oracle 于 2018 年收购后，Leon、Laurent 与 Yuri 对此前创业所面对的不断上涨云账单仍感到棘手，于是尝试构建一个无需手工干预即可优化云基础设施和降低成本的平台。[S1] 当前领导层页面将 Yuri Frayman 列为 CEO、Leon Kuperman 列为 CTO、Laurent Gil 列为 President，因而这里的“团队延续”有公司一手资料支持。[S1]
+
+这段出身塑造了公司的第一个选择：它没有从模型框架、GPU 设计或云资源转售切入，而是把“客户已经拥有云账户和 Kubernetes 集群”视作既成事实，把优化决策和执行自动化嵌入其中。这样的起点带来了务实的切口——客户不必推倒重建平台；也留下了限制——其价值会受到 Kubernetes 普及度、云 API、节点供应与客户授权范围的约束。
+
+### 2.2 2021：从三大公有云支持，验证“优化即产品”
+
+公司在 2021-10 的官方文章披露完成 **1,000 万美元 Series A**，并表示将支持扩展到 AWS、Google Cloud 和 Azure 三大云。[S7] 这不是一个纯观察工具的融资故事。公司强调的产品组合包括成本报告、实例/节点管理、自动扩缩和 spot 自动化，目标是让客户不只看见浪费，而能执行资源选择和容量变化。[S7]
+
+这一阶段最关键的技术和商业判断是：只出成本报表很难形成高转换成本，真正有价值的是获得足够权限、理解 workload，再把实例选择、扩缩与重排变成可回滚的生产动作。代价也很明显：一旦涉及驱逐、迁移、spot 中断和 stateful workload，优化软件必须同时承担可靠性和可解释性的责任。CAST AI 后来的产品路线一直在试图回答这道题，而非简单扩展 dashboard 指标。
+
+### 2.3 2023 上半年：从监控建议走向 Kubernetes 执行面
+
+2023-03，公司宣布由 Creandum 领投的 **2,000 万美元**融资，其中新闻稿称 Creandum 投入 1,500 万美元、原有投资人追加 500 万美元；当时公司称累计融资为 **3,800 万美元**。[S2] 这三个数字均按原文口径记录，不能倒推出每一轮精确金额，也不能以今天的估值替换当时融资价格。
+
+公司在同一公告中给出的产品边界很清楚：把 Kubernetes 集群接入平台，系统对计算资源进行分析，再以建议及云原生自动化实现成本优化；并列出 cost monitoring、autoscaling、spot instance automation 和 container security。[S2] 这时它仍主要是一家 Kubernetes 成本优化公司，不过与只提供预算和 showback 的 FinOps 工具已经开始分岔：它要进入客户集群，把“建议”变成“资源动作”。
+
+从客户和组织角度看，这种选择会提高销售和部署摩擦。平台团队需要评估 IAM 权限、pod disruption、SLO、合规、node template、instance policy 与回滚规则；但是一旦证明收益，也会形成比仪表盘更强的日常嵌入。官方新闻稿列举 ShareChat、Iterable、Branch 等客户为节省案例，但没有披露合同额或保留率，因此不能把这些名字合并为收入结论。[S2]
+
+### 2.4 2023 下半年：Series B 加速，产品从“省钱”转向集群自治
+
+2023-11，CAST AI 宣布 **3,500 万美元 Series B**，由 Vintage Investment Partners 与既有投资人 Creandum、Uncorrelated Ventures 参与，并称累计融资达到 **7,300 万美元**。[S3] “累计 7,300 万美元”与此前 3,800 万美元和本轮 3,500 万美元相加一致，故可作为融资口径的交叉校验；它不包含后来未披露金额的战略投资和授信。[S2][S3]
+
+新闻稿将差异点表述为：不止监测集群或给出建议，而是用机器学习算法和启发式方法自动优化集群，并在成本、性能、可靠性与工程生产率之间取平衡。[S3] 这里既是其卖点，也是需要尽调的地方。自动化系统如果只追逐 spot 价格，很可能把中断和延迟风险转给业务；如果规则过度保守，则会退化为昂贵的成本可视化。采购时必须测量 savings 与 SLO、变更频率、回滚、故障恢复共同发生时的净结果。
+
+### 2.5 2024—2025：从 Kubernetes cost optimization 扩展为 APA
+
+2025-04 公司宣布 **1.08 亿美元 Series C**，领投方为 G2 Venture Partners 与 SoftBank Vision Fund 2，Aglaé Ventures 及 Hedosophia、Cota Capital、Vintage、Creandum、Uncorrelated 等既有投资方参与。[S4] 公司称当时服务超过 2,100 家组织、2023 至 2024 年客户数翻倍，并列举 Akamai、BMW、FICO、HuggingFace、NielsenIQ、Swisscom 等；这些均应被视为公司披露的客户/使用线索，而不是经审计的财务数据。[S4]
+
+同一时期，公司用 APA 重新描述自身：从 performance signals 出发，向成本、安全和速度施加实时自动化动作。[S4][S5] 这一命名转变并不等于它已经成为所有云应用的 APM、SRE 或安全平台。更准确的理解是，CAST AI 希望把原来围绕 Kubernetes 容量与成本的控制能力扩展到性能、迁移、资源效率和云/本地基础设施，借以避免“只在预算紧张时才被打开”的工具化命运。
+
+2025-02 的官方公告进一步扩展了部署边界：从 AWS、Azure、GCP 延伸到 on-premises Kubernetes，以及 Red Hat OpenShift、Rancher、Oracle Cloud、IBM Cloud、Linode 等路径。[S6] 这证明产品不再只锁定三大 hyperscaler，但并不证明不同环境上的功能、性能、安全认证和客户覆盖完全一致。对机器人公司的私有集群尤其要逐项问清，不能用“支持 on-prem”替代架构审查。
+
+### 2.6 2025—2026：战略资本与跨云 GPU 接入，把边界推向异构算力
+
+2025-10，公司宣布获得 Metanet 的股权投资及 J.P. Morgan 的 credit facility；公告明确没有披露两者金额，并称授信可用于扩张、创新和潜在收购。[S10] 新闻稿又把这笔交易放在 Series C 之后，显示公司在股权融资之外开始使用战略投资与债务工具。资本结构、优先权、债务担保与 covenant 均未公开，不能把 credit facility 算作收入、等额股权融资或可自由动用现金。
+
+2026-07 的 OMNI Compute 是路线变化中最值得投资人关注的一步。产品页声称可把其他账户中的预留容量、私有云节点或客户自有基础设施接入既有 Kubernetes 集群；远程 GPU 节点通过 Crossplane 与 CRD provisioning，经 WireGuard 连接后呈现为原生 cluster node，平台负责 placement、sharing、GPU bin-packing、MIG/time-slicing 和成本归因。[S11] 若其在真实生产网络和故障条件下成立，CAST AI 从“优化某云中的节点”向“把分散 GPU 容量接到一个集群中调度”迈出实质一步。
+
+但这一段不能被过度书写。该页同时说客户保留既有合同和 providers，且 onboarding 当前仍由其团队手工完成、自助化尚未提供。[S11] 这说明 OMNI 首先是**客户自有或已签约容量的连通、调度与优化层**，不是已经成熟的 GPU 交易市场、容量经纪商或无差别多厂商资源池。其可复制性、地域覆盖、跨云网络时延、数据合规、故障域和按量计费模式仍是开放问题。
+
+### 2.7 融资与资本事件表
+
+| 时间 | 事件及原文金额 | 已公开投资方/对手方 | 研究处理 |
+|---|---|---|---|
+| 2021-10 | Series A，1,000 万美元 | 新闻稿未在本报告引用范围内列出完整投资方。[S7] | 已完成融资；不得与后续累计金额重复相加。 |
+| 2023-03 | 新融资 2,000 万美元，公告称累计 3,800 万美元 | Creandum（1,500 万美元）及既有投资人（500 万美元）。[S2] | 已完成融资，保留原文拆分。 |
+| 2023-11 | Series B，3,500 万美元；累计 7,300 万美元 | Vintage、Creandum、Uncorrelated Ventures。[S3] | 已完成融资；累计口径与此前公告可算术交叉核验。 |
+| 2025-04 | Series C，1.08 亿美元 | G2 Venture Partners、SoftBank Vision Fund 2、Aglaé、Hedosophia、Cota、Vintage、Creandum、Uncorrelated 等。[S4] | 已完成融资；公告未披露估值与完整条款。 |
+| 2025-10 | Metanet 股权投资、J.P. Morgan credit facility，金额未披露 | Metanet、J.P. Morgan。[S10] | 不将未披露金额计入累计融资；债务与股权分开尽调。 |
+| 2026-01（公司当前页回顾） | Pacific Alliance Ventures 的战略投资，金额未披露 | Pacific Alliance Ventures（Shinsegae Group 的美国 corporate venture arm）。[S10] | 仅作公司当前页中的历史陈述；缺原始交割公告、金额与条款，不能用作估值锚。 |
+
+按可验证、且不含未披露战略投资/授信的轮次计算，Series A、2023 年 2,000 万美元轮、Series B 与 Series C 相加为 **至少 1.81 亿美元**；这是算术推导（0.10 + 0.20 + 0.35 + 1.08，单位：亿美元），并非公司在 Series C 后披露的官方累计融资数字。[S2][S3][S4][S7]
+
+## 三、技术与商业边界：自动化控制面，而不是通用算力供应商
+
+### 3.1 核心动作链：观察—决策—执行—验证
+
+CAST AI 的第一性产品是将 Kubernetes workload 的资源请求、真实使用、节点形态、价格、可用性和性能约束汇集起来，再自动执行 rightsizing、扩缩、bin-packing、资源清理或重平衡。APA 页面把“成本 dashboard、告警、建议”明确列为不足，声称平台会执行实时自主性能优化。[S5] 因而真正的产品风险不止算法好不好，而是它能否安全地拥有足够的执行权限，并在 SLO 约束下做出可审计、可撤销的变更。
+
+这也解释了它为什么最接近调度与编排软件：其价值是在一个不断变化的集群中决定资源何时、在哪种节点上、以怎样密度供给给 workload，并把决定落地。它与纯账单分析工具的差别，是前者回答“哪里花多了”，后者还要承担“我如何自动改变运行状态”。
+
+### 3.2 GPU 优化是资源利用层，不是模型推理框架
+
+OMNI Compute 页面列出 GPU time-slicing、A100/A30/H100 的 MIG 分区、Dynamic Resource Allocation、GPU-optimized bin-packing 以及按 workload 的 GPU metrics/cost attribution；公司另一篇技术文章也以 time-slicing、MIG 和节点 bin-packing 描述其 GPU 优化路径。[S8][S11] 这些能力对大模型训练、批处理、多租户评测和非实时推理都很有用：它们能提高 GPU 密度，缩短新节点可用的等待，并避免因保守预留导致长期闲置。
+
+但 CAST AI 公开材料没有说明自己提供 LLM runtime、attention kernel、KV cache、token routing、PD 分离或模型编译器。因此不应把 GPU 利用率优化误写为 `5.2 推理框架` 或 `4.2 推理PD分离`。机器人团队若购买它，仍需自己或与其他供应商解决模型运行时、服务 API、显存管理、算子性能和端云协同。
+
+### 3.3 跨云能力：有明确节点接入，但非资源市场
+
+OMNI 的技术叙述提供了比“支持多云”更具体的证据：可在其他账户、私有云或自有基础设施的容量上部署轻量 agent；使用 Crossplane/CRD 与 WireGuard 接入现有集群；远程节点以 native Kubernetes nodes 出现；用户无需修改 workload 的资源请求方式。[S11] 这为 `4.1` 的观察标签提供了基础，因为它确实触及跨厂商/跨区域 GPU 的实际 placement，而不仅是生成跨云报表。
+
+不过，平台明确让客户保留合同和 provider，且以 hands-on onboarding 为当前方式。[S11] 尚未看到公开的标准化容量目录、实时多厂商报价/信用审核、统一 GPU 采购/结算、供应商履约担保、跨云数据复制策略或对训练/推理作业的端到端全局队列。因此它不是 `4.4 多厂商算力池`，也还不足以把“任何 Kubernetes workload 的跨云 placement”理解为已规模化的、独立的 `4.1` 主业务。
+
+### 3.4 安全、数据和退出边界
+
+DPA 表明 CAST AI 会作为 processor 为客户处理个人数据，使用子处理者，并允许个人数据在 EEA、美国或其/子处理者有处理运营的其他地点被处理；协议还规定客户在终止时可选择删除或（可行时）返还留存的个人数据。[S9] 这不是对机器人数据、视频、语音、设备日志或模型权重的充分安全认证，更不是对跨境训练数据的许可。
+
+POC 前必须核验：agent 拥有的 Kubernetes RBAC 权限；是否可读取 pod metadata、镜像、日志、metrics 或 secrets；WireGuard 网络路径和远程 GPU 节点的隔离；控制面故障时的 fail-open/fail-closed 行为；优化动作的审批、回滚与审计；数据留存；以及终止服务后 CRD、node template、policy 和历史成本数据的迁移。任何一项未闭合，都可能使“节省 GPU 成本”变成更昂贵的安全或可用性事件。
+
+## 四、横向分析：同样都在“省云钱”，真正差异在谁能安全地动生产集群
+
+### 4.1 赛道地图
+
+| 路线/代表 | 用户实际买到什么 | 对 CAST AI 的替代或威胁 | CAST AI 的位置 |
+|---|---|---|---|
+| Kubernetes Cluster Autoscaler、Karpenter、VPA、原生 scheduler | 原生/开源的节点供给、弹性与资源建议/调整能力 | 可自建、控制力更强、无第三方控制面费用；需自行整合策略、可观测性和 on-call | CAST AI 试图把多项动作整合成持续优化层，但须证明自动化结果和安全边界优于自建。 |
+| Kubecost、OpenCost、FinOps/账单工具 | 成本归因、预算、showback、异常与建议 | 价格可见性更强，部署阻力低；多半不主动改变运行状态 | CAST AI 的差异在执行 rightsizing/扩缩/节点策略，风险也更高。 |
+| Spot by NetApp（原 Spot）、CloudZero 等云优化平台 | spot、容量优化、FinOps、云成本治理 | 在云成本优化、企业销售和云资源策略上直接竞争 | CAST AI 更 Kubernetes-native，须继续证明自动化动作能覆盖更复杂 workload。 |
+| AWS/GCP/Azure 的托管 Kubernetes、Autoscaler 与 GPU 产品 | 云账户、区域、计算/网络/身份和原生运维工具 | 供应商拥有最深 API、供应能力和采购关系；可把优化能力内建 | CAST AI 的价值来自跨环境、统一策略与更快的自动化，不来自拥有底层云。 |
+| GPU 云/算力池与训练平台 | GPU 容量、合同、镜像/训练队列及按量计费 | 可解决“有没有 GPU”而不仅是“如何优化已有 GPU” | OMNI 可接入分散容量但不公开承担供给、统一合同或作业平台责任。 |
+
+### 4.2 与原生 Kubernetes 和自建平台：控制权换取工程时间
+
+成熟的机器人基础设施团队可以利用 Kubernetes 原生能力、Karpenter、VPA、监控系统和内部 policy engine，自行定义节点选择、GPU 隔离、spot 风险与作业优先级。这样做的优势是所有决策、审计和数据都在本公司控制域中，针对机器人仿真、数据回放和实验优先级也更容易特化。代价则是要长期养一支能处理 cluster scaling、interruptions、驱逐、metric quality 与生产事故的团队。
+
+CAST AI 的价值是把这些分散动作组成对业务目标负责的自动化闭环。官网把 workload rightsizing、毫秒级响应的 scaling、闲置资源清理和多云基础设施组合列为产品能力。[S5] 若这些承诺在用户真实集群里成立，购买方得到的是更少的手工 capacity planning 和更快的成本/性能调节；若动作不可解释或不可靠，客户反而会失去对生产集群的把握。因此它的核心竞争不是“算法比 scheduler 更聪明”这一句营销话，而是“在客户可接受的故障预算内，持续做对资源动作”。
+
+### 4.3 与可视化 FinOps：建议和执行之间有一条风险鸿沟
+
+FinOps 工具通常容易获得组织认同，因为它们先揭露成本、分摊责任，再交由工程团队决定改变什么。CAST AI 明确瞄准这一步之后，主张不只是显示 waste 或发送 alerts。[S5] 这会带来更高的潜在价值：省钱速度更快，优化不依赖每周人工 review；也会带来更高的治理要求：谁批准自动修改 resource request，谁承担外部 API、节点替换和 workload disruption 的责任？
+
+对投资人而言，自动执行能力可能提高 stickiness，但不应直接等同于更高毛利。需要拆分 agent/控制面成本、支持工时、客户启用自动化比例、rollback 率、对不同云与 workload 的覆盖，以及在有 stateful workload 时的净节省。对机器人公司，最稳妥的进入方式是先让平台只生成建议或在可回滚的 batch 集群启用动作，再逐级扩大权限。
+
+### 4.4 与 GPU 云和跨厂商调度：OMNI 是有意义的前沿，不是完整答案
+
+CAST AI 的 OMNI 有一个真实而具体的切口：客户可能已经在其他账户、私有节点或不同行政区域获得 GPU，但这些容量无法被当前 Kubernetes 集群自然使用。公司声称可用 Crossplane/CRD/WireGuard 把它们接进来，同时做 sharing、partition 和 placement。[S11] 对 GPU 供应紧张、已有多处预留容量的大企业，这是比“再多一个成本 dashboard”更有价值的功能。
+
+可是机器人训练的跨厂商调度还需要解决数据所在位置、checkpoint 传输、训练通信、模型/容器供应链、长作业恢复、作业优先级、公网带宽成本、时延和合规。公开页面没有给出这些端到端能力或基准，也承认当前 onboarding 仍需其团队参与。[S11] 因此本报告把 OMNI 视为对 `4.1` 的可验证产品楔子，不把它当作“已经形成多厂商算力池”的结论。
+
+### 4.5 客户口碑与可验证性
+
+官网的 about 页面展示 ShareChat、Voggt、Yotpo 等具名评价；Series C 公告称服务超过 2,100 家组织并列出多家大型客户。[S1][S4] 这些是采购访谈名单和需求存在的正面信号。它们并不能确认当前合同状态、收入集中度、海外/中国可交付性、与 GPU/机器人负载的适配，亦不能说明每个客户都获得页面宣称的节省幅度。
+
+反过来，OMNI 页面主动披露“onboarding today is hands-on”的事实是有价值的负面/限制证据。[S11] 它提示我们公司并非把全部边界条件封装为零接触 SaaS。对投资判断，这是交付能力和客户粘性的来源，也是人员扩张、实施成本与规模化速度的风险来源。
+
+## 五、横纵交汇：把“资源动作”产品化，是它的护城河，也是它的约束
+
+CAST AI 的历史在当下竞争位置中留下了清楚的印记。创始团队从云账单问题开始，2021 年优先支持三大云，2023 年用 Kubernetes 成本优化建立执行权，2025 年再把叙事扩展为 APA。[S1][S2][S3][S5] 因而它并非为了 AI 热潮才贴上 GPU 标签；它已经积累了对节点、workload、容量和可用性之间关系的产品理解。这是面对 GPU 稀缺和 AI 集群资源浪费时的优势。
+
+但同一条历史路径也限制了它。它的价值建立在客户愿意把集群权限、指标和自动化动作交给外部控制层上；云厂商可将相近能力内建，平台团队可自建，纯 FinOps 工具则可用更低风险的建议模式竞争。OMNI 把边界推向跨云 GPU 接入，然而客户仍需保留合同且 onboarding 尚不能自助。[S11] 因此 CAST AI 的未来不是简单的“多云胜利”，而是要证明跨域自动化在安全、性能、成本与交付效率上可以被标准化。
+
+### 5.1 三种情景
+
+**最可能情景：成为 Kubernetes 自动化的高价值执行层。** 公司持续在已有云账户和 Kubernetes 集群上销售 rightsizing、bin-packing、spot/容量策略与 GPU 利用率优化；客户购买的是较少的人工 capacity planning 和更高的资源效率。前提是自动化能长期保持 SLO、支持成本不失控，且云厂商未把足够相近的功能无缝捆绑。
+
+**乐观情景：OMNI 变成企业分散 GPU 的统一接入层。** 若 Crossplane/CRD/WireGuard 路线在多区域、私有云与多供应商 GPU 上稳定运行，并把人工 onboarding 变成可自助复制的产品，CAST AI 可从“优化每个集群”上升为“让企业既有 GPU 容量可被同一 Kubernetes 平面使用”的控制层。[S11] 这会显著增强对 AI 训练与推理基础设施的战略价值，但仍不自动等于 GPU 市场或统一采购平台。
+
+**危险情景：自动化收益被原生能力商品化，实施风险吞噬节省。** 云厂商、Karpenter/开源社区和客户内部平台吸收大部分 capacity optimization；而复杂 workload、stateful service、跨云网络及人工接入使 CAST AI 难以规模化。若每个大型客户都需要重实施和持续人工调参，收入增长可能伴随较高服务成本，Series C 后的资本投入也无法转化为软件经营杠杆。
+
+## 六、面向人形机器人公司的行动建议
+
+### 6.1 采购：以可回滚的云端 AI 集群做 P0
+
+建议做 6—8 周 P0，选择两个非安全关键负载：模型评测/批量视频处理，以及云端 VLM/LLM 的异步推理或训练开发集群。并行对照现有 Kubernetes/云原生工具、CAST AI 仅建议模式、以及启用受控自动化后的结果。指标必须同时包括 GPU/CPU/内存利用率、单位有效训练 step 或有效请求成本、queue delay、p95/p99、spot interruption、pod/node churn、作业失败/恢复、人工 on-call 工时和回滚次数。
+
+不应先把平台接入机器人实时控制、避障、设备端部署或安全关键云服务。CAST AI 的资源优化能减少等待和浪费，却不是确定性实时运行时或安全认证控制器。即使选 OMNI，也要另测跨区域时延、数据出境、checkpoint/镜像传输、WireGuard 路由、故障隔离和数据驻留。
+
+### 6.2 投资与并购：先验证可复制性，再讨论资本关系
+
+**投资建议：P1 战略观察，不进入常规财务投资立项。** 正面信号包括连续完成的 A/B/C 轮融资、明确的 Kubernetes 自动化产品、公开客户线索、从 hyperscaler 到 on-prem 的扩展，以及具体的跨云 GPU 接入方案。[S2][S3][S4][S6][S11] 关键未知项包括 ARR/毛利、客户集中度、自动化启用率、净留存、实施人时、云/网络成本、OMNI 的真实供应覆盖与战略融资后的清算优先权。
+
+**并购建议：不启动。** 公司的价值来自跨云生态中立性、平台团队信任和持续服务能力；收购可能削弱其服务其他客户和云生态的意愿。只有在本公司长期运营大规模国际 Kubernetes GPU 集群，POC 能明确优于内部平台，且能获得团队、IP、客户合同及数据/控制面权利时，才应重新讨论少数股权、商业合作或并购。
+
+### 6.3 自研边界
+
+本公司应持续自研与机器人差异化直接相关的内容：训练/仿真作业优先级、数据与轨迹治理、边缘—云任务划分、确定性设备运行时、安全策略、跨域数据合规以及对模型/实验结果的归因。可采购或合作的部分包括 Kubernetes 节点优化、GPU sharing、集群 rightsizing、spot/容量策略和部分跨云节点接入。CAST AI 可以帮助资源效率，但不应被误认为已经替代训练框架、推理引擎、模型服务、数据平台或多厂商算力采购体系。
+
+## 七、合作网络、冲突与待验证事项
+
+### 7.1 必须拆开的关系网络
+
+| 关系类型 | 已公开对象/证据 | 可确认关系 | 不可推导内容 |
+|---|---|---|---|
+| 投资方/债权方 | Creandum、Vintage、Uncorrelated、G2、SoftBank Vision Fund 2、Aglaé、Hedosophia、Cota；Metanet；J.P. Morgan。[S2][S3][S4][S10] | 各公告所述轮次参与或授信关系。 | 当前持股、董事席位、优先权、授信金额、抵押与 covenant。 |
+| 客户/使用线索 | ShareChat、Voggt、Yotpo；Akamai、BMW、FICO、HuggingFace、NielsenIQ、Swisscom 等。[S1][S4] | 公司公开展示的客户/评价或客户名单。 | 合同额、续约、活跃度、收入集中度和机器人工作负载使用。 |
+| 云与技术生态 | AWS、GCP、Azure、OpenShift、Rancher、Oracle、IBM Cloud、Linode、Kubernetes、Crossplane、WireGuard。[S6][S11] | 产品宣称支持/使用或与这些环境集成。 | 云厂商投资、独家关系、GPU 供应保证或采购优先权。 |
+| 战略商业合作 | Metanet（投资且公告称扩展韩国与东南亚）；J.P. Morgan（credit facility）。[S10] | 公告中的投资、区域合作和授信关系。 | 各地区独家权、销售额或收购已获批准。 |
+| 人才/技术谱系 | Zenedge；Yuri Frayman、Leon Kuperman、Laurent Gil。[S1] | 创始团队共同创业经历和公司缘起。 | 当前完整股权、全部雇佣/IP 安排。 |
+
+### 7.2 冲突、未确认事项与证伪条件
+
+| 议题 | 支持证据 | 缺口/限制 | 对结论与下一步 |
+|---|---|---|---|
+| 主体 | DPA 写明 CAST AI Group, Inc.。[S9] | 登记状态、关联实体、IP 和签约主体未核验。 | 交易前调取公司登记、DPA、MSA 和 IP 文件。 |
+| 成本/性能收益 | APA 页面称成本最高可降 80%，并承诺自动优化。[S5] | 供应商主张；无机器人模型、作业或公开完整基准。 | POC 同测成本、SLO、故障与人工工时。 |
+| 跨云 GPU 能力 | OMNI 明示远程 GPU 接入、placement/sharing、Crossplane/CRD/WireGuard。[S11] | 当前人工 onboarding；没有公开供应商/地域矩阵、生产 SLA 或端到端训练基准。 | 将 4.1 作为观察性次级能力，要求架构与客户访谈验证。 |
+| 多厂商算力池 | 可接其他账户、私有云和自有基础设施容量。[S11] | 用户保留合同/provider；无统一采购、交易、结算或供给担保证据。 | 不列入 4.4，除非出现成熟容量池与商业闭环证据。 |
+| 融资/估值 | A/B/C 与金额均有官方公告。[S2][S3][S4][S7] | Series C 估值、战略投资/credit facility 金额及条款未披露。 | 不以新闻稿推断估值；交易前核验 cap table 与债务文件。 |
+| 安全与数据 | DPA 描述 processor、子处理、跨境和删除/返还条款。[S9] | 不能代替模型权重、视频、机器人日志的安全/数据驻留审计。 | 对 agent 权限、网络、审计、数据流和退出逐项尽调。 |
+
+## 八、来源审计表
+
+| 编号 | 来源 | 等级 | 本报告使用范围 |
+|---|---|---|---|
+| S1 | [CAST AI 公司与团队页](https://cast.ai/about-us/)（访问于 2026-08-11） | 一手官网 | 起源、创始团队、官网展示的客户/评价；不作财务证明。 |
+| S2 | [CAST AI：2,000 万美元融资公告](https://cast.ai/press-release/cast-ai-receives-20m-in-new-funding-led-by-early-stage-vc-creandum/)（2023-03-16） | 一手融资公告 | 2023 年融资、累计口径、产品边界和早期客户线索。 |
+| S3 | [CAST AI：3,500 万美元 Series B 公告](https://cast.ai/press-release/series-b-announcement/)（2023-11-07） | 一手融资公告 | Series B、累计融资、投资方和自动化定位。 |
+| S4 | [CAST AI：1.08 亿美元 Series C 公告](https://cast.ai/press-release/cast-ai-closes-108m-series-c-round/)（2025-04-30） | 一手融资公告 | Series C、投资方、公司自述的客户数/客户名单与 APA 扩张。 |
+| S5 | [CAST AI APA 平台页](https://cast.ai/application-performance-automation-platform/)（访问于 2026-08-11） | 一手产品页 | APA、rightsizing、autoscaling、多云决策及供应商收益主张。 |
+| S6 | [CAST AI Anywhere 扩展公告](https://cast.ai/press-release/cast-ai-extends-automation-and-cost-optimization-capabilities-to-on-premises-and-additional-cloud-providers/)（2025-02-18） | 一手产品公告 | on-prem、OpenShift/Rancher/额外云环境的公开支持范围。 |
+| S7 | [CAST AI：1,000 万美元 Series A 及三云支持](https://cast.ai/blog/10m-to-optimize-kubernetes-cast-ai-raises-series-a-and-extends-support-to-top-3-cloud-providers/)（2021-10-12） | 一手融资公告 | Series A 金额和 AWS/GCP/Azure 早期覆盖。 |
+| S8 | [CAST AI GPU sharing 技术文章](https://cast.ai/blog/gpu-sharing-kubernetes-cost-optimization/)（2026-04-13） | 一手技术内容 | GPU sharing/MIG/time-slicing 的背景与公司产品表述；不作为独立性能审计。 |
+| S9 | [CAST AI 客户数据处理附录](https://cast.ai/customer-data-processing/)（有效于 2023-06-21） | 一手法律文件 | 主体、processor、跨境处理、子处理者及终止数据处理边界。 |
+| S10 | [CAST AI：Metanet 战略投资与 J.P. Morgan 授信公告](https://cast.ai/press-release/castai-strategic-investment-and-credit-facility/)（2025-10-08） | 一手融资公告 | 未披露金额的战略投资、授信及公司当前页对 PAV 历史投资的表述。 |
+| S11 | [CAST AI OMNI Compute／Cross-cloud GPU Access](https://cast.ai/cross-cloud-gpu-access/)（2026-07-15） | 一手产品页 | 跨云 GPU 接入、Crossplane/CRD/WireGuard、placement/sharing、人工 onboarding 与能力边界。 |
+
+### 方法说明
+
+本报告按横纵分析法，将 CAST AI 从 Kubernetes 成本优化工具到 APA 与 OMNI Compute 的历时演变，与原生 Kubernetes、FinOps、云厂商、GPU 云和跨厂商调度的同期竞争结构交叉分析。所有未获公开交易、客户合同、生产性能或安全资料支持的判断均保留为尽调问题。
+
+## 九、产业链分类复核（报告末尾结论）
+
+**主分类：`3.5 调度与编排软件`（高置信）。** CAST AI 的核心价值是把 workload rightsizing、节点/实例选择、bin-packing、扩缩、资源清理与重平衡做成自动化的 Kubernetes 资源动作；用户买的是持续的资源决策与执行，而非单纯账单可视化。[S2][S3][S5]
+
+**次分类：`3.6 集群管理软件`（中高置信）。** 它连接、观测并优化 Kubernetes cluster，支持公有云、on-prem 和多种 Kubernetes 环境；资源配置、节点接入、策略与可用性治理与集群管理紧密相关。[S5][S6] 但其差异化仍在自动化调度/优化，不应将“管理集群”倒置为主分类。
+
+**观察性次级能力：`4.1 跨厂商训推算力调度平台`（中等置信，限于 OMNI Compute）。** OMNI 的公开架构已明确到将其他账户、私有云或自有基础设施的 GPU 节点接入既有 Kubernetes 集群，并负责 placement、sharing 和 GPU 资源配置；它不是泛泛的多云宣传。[S11] 但人工 onboarding、未披露的供应覆盖与缺少训练/推理端到端验证，使 `4.1` 不能成为主分类，亦须在真实机器人训练/推理 POC 中复核。
+
+**不列入：`4.4 多厂商算力池`。** CAST AI 明确称用户保留既有合同与 provider；公开资料未展示可交易的多供给方容量目录、统一采购/结算、履约保证或平台自有算力池。[S11] “可把已拥有的异地 GPU 接到 Kubernetes 集群”不等于“运营多厂商算力池”。

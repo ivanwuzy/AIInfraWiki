@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/CYRqvuwu82d40+DNs6tfMTXCobI</id>
+  <title>arXiv Query: search_query=id:2110.14883&amp;id_list=&amp;start=0&amp;max_results=10</title>
+  <updated>2026-08-09T15:55:32Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=id:2110.14883&amp;start=0&amp;max_results=10&amp;id_list=" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>10</opensearch:itemsPerPage>
+  <opensearch:totalResults>1</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2110.14883v3</id>
+    <title>Colossal-AI: A Unified Deep Learning System For Large-Scale Parallel Training</title>
+    <updated>2023-10-05T04:09:09Z</updated>
+    <link href="https://arxiv.org/abs/2110.14883v3" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2110.14883v3" rel="related" type="application/pdf" title="pdf"/>
+    <summary>The success of Transformer models has pushed the deep learning model scale to billions of parameters. Due to the limited memory resource of a single GPU, However, the best practice for choosing the optimal parallel strategy is still lacking, since it requires domain expertise in both deep learning and parallel computing.
+  The Colossal-AI system addressed the above challenge by introducing a unified interface to scale your sequential code of model training to distributed environments. It supports parallel training methods such as data, pipeline, tensor, and sequence parallelism, as well as heterogeneous training methods integrated with zero redundancy optimizer. Compared to the baseline system, Colossal-AI can achieve up to 2.76 times training speedup on large-scale models.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.DC" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2021-10-28T04:45:55Z</published>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Shenggui Li</name>
+    </author>
+    <author>
+      <name>Hongxin Liu</name>
+    </author>
+    <author>
+      <name>Zhengda Bian</name>
+    </author>
+    <author>
+      <name>Jiarui Fang</name>
+    </author>
+    <author>
+      <name>Haichen Huang</name>
+    </author>
+    <author>
+      <name>Yuliang Liu</name>
+    </author>
+    <author>
+      <name>Boxiang Wang</name>
+    </author>
+    <author>
+      <name>Yang You</name>
+    </author>
+  </entry>
+</feed>
