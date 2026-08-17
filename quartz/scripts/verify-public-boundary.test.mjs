@@ -1,5 +1,5 @@
 import assert from "node:assert/strict"
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises"
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import path from "node:path"
 import test from "node:test"
@@ -11,6 +11,7 @@ async function publicFixture() {
   await mkdir(path.join(publicRoot, "raw", "assets"), { recursive: true })
   await writeFile(path.join(publicRoot, "index.html"), "home")
   await writeFile(path.join(publicRoot, "wiki", "index.html"), "wiki")
+  await writeFile(path.join(publicRoot, "raw", "index.html"), "raw")
   await writeFile(path.join(publicRoot, "raw", "assets", "evidence.txt"), "raw")
   return publicRoot
 }
@@ -35,5 +36,15 @@ test("rejects an incomplete artifact", async () => {
   await assert.rejects(
     verifyPublicBoundary({ publicRoot, requiredPaths: ["missing.html"] }),
     /Missing required output/,
+  )
+})
+
+test("requires raw index output by default", async () => {
+  const publicRoot = await publicFixture()
+  await rm(path.join(publicRoot, "raw", "index.html"))
+
+  await assert.rejects(
+    verifyPublicBoundary({ publicRoot }),
+    /Missing required output: raw\/index.html/,
   )
 })

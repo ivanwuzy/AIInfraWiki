@@ -24,7 +24,10 @@ test("copies only wiki and raw and removes stale generated files", async () => {
   await syncVaultContent({ sourceRoot: root, contentRoot })
   assert.deepEqual((await readdir(contentRoot)).sort(), ["index.md", "raw", "wiki"])
   assert.equal(await readFile(path.join(contentRoot, "wiki", "index.md"), "utf8"), "# Wiki\n")
-  assert.equal(await readFile(path.join(contentRoot, "raw", "assets", "evidence.txt"), "utf8"), "evidence\n")
+  assert.equal(
+    await readFile(path.join(contentRoot, "raw", "assets", "evidence.txt"), "utf8"),
+    "evidence\n",
+  )
   assert.match(await readFile(path.join(contentRoot, "index.md"), "utf8"), /AI Infra/)
 })
 

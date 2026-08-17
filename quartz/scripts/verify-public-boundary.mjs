@@ -25,7 +25,10 @@ async function inspectDirectory(root, directory = root) {
   }
 }
 
-export async function verifyPublicBoundary({ publicRoot, requiredPaths = ["index.html", "wiki/index.html"] }) {
+export async function verifyPublicBoundary({
+  publicRoot,
+  requiredPaths = ["index.html", "wiki/index.html", "raw/index.html"],
+}) {
   for (const relative of requiredPaths) {
     try {
       await access(path.join(publicRoot, relative))
@@ -41,9 +44,6 @@ if (process.argv[1] && path.resolve(process.argv[1]) === scriptPath) {
   const quartzRoot = path.resolve(path.dirname(scriptPath), "..")
   await verifyPublicBoundary({
     publicRoot: path.join(quartzRoot, "public"),
-    requiredPaths: [
-      "index.html",
-      "wiki/index.html",
-    ],
+    requiredPaths: ["index.html", "wiki/index.html", "raw/index.html"],
   })
 }

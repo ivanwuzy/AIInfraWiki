@@ -11,7 +11,9 @@ test("enables the agreed standard Quartz features", async () => {
   const config = YAML.parse(await readFile(path.join(quartzRoot, "quartz.config.yaml"), "utf8"))
   assert.equal(config.configuration.locale, "zh-CN")
   assert.equal(config.configuration.analytics.provider, null)
-  const enabled = new Set(config.plugins.filter((plugin) => plugin.enabled).map((plugin) => plugin.source))
+  const enabled = new Set(
+    config.plugins.filter((plugin) => plugin.enabled).map((plugin) => plugin.source),
+  )
   for (const source of [
     "@quartz-community/content-index",
     "@quartz-community/explorer",
@@ -20,7 +22,8 @@ test("enables the agreed standard Quartz features", async () => {
     "@quartz-community/backlinks",
     "@quartz-community/table-of-contents",
     "@quartz-community/darkmode",
-  ]) assert.ok(enabled.has(source), `${source} must be enabled`)
+  ])
+    assert.ok(enabled.has(source), `${source} must be enabled`)
   for (const source of ["@quartz-community/encrypted-pages", "@quartz-community/comments"]) {
     assert.ok(!enabled.has(source), `${source} must be disabled`)
   }
@@ -39,5 +42,8 @@ test("deploys the complete generated site from AIInfraWiki through GitHub Pages"
   assert.match(workflow, /actions\/upload-pages-artifact@v3/)
   assert.match(workflow, /path: quartz\/public/)
   assert.match(workflow, /actions\/deploy-pages@v4/)
-  assert.doesNotMatch(workflow, /aiinfra-wiki-pages|peaceiris\/actions-gh-pages|PAGES_DEPLOY_TOKEN|external_repository/)
+  assert.doesNotMatch(
+    workflow,
+    /aiinfra-wiki-pages|peaceiris\/actions-gh-pages|PAGES_DEPLOY_TOKEN|external_repository/,
+  )
 })
