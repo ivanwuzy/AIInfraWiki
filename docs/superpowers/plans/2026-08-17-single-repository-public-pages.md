@@ -160,17 +160,18 @@ git diff --cached --name-only
 
 Expected: `.obsidian/graph.json` and `.obsidian/workspace.json` are the only unstaged changes.
 
-- [ ] **Step 2: Push main**
 
-Run: `git push origin main`
-
-Expected: the seven existing Quartz commits, design/plan documents, test, workflow, and theme dependency changes reach the now-public repository.
-
-- [ ] **Step 3: Set GitHub Pages to GitHub Actions**
+- [ ] **Step 2: Set GitHub Pages to GitHub Actions**
 
 Run: `gh api --method POST repos/ivanwuzy/AIInfraWiki/pages -f build_type=workflow`
 
 Expected: a Pages-site response. If it reports an existing site, run `gh api --method PUT repos/ivanwuzy/AIInfraWiki/pages -f build_type=workflow`.
+
+- [ ] **Step 3: Push main**
+
+Run: `git push origin main`
+
+Expected: the seven existing Quartz commits, design/plan documents, test, workflow, and theme dependency changes reach the now-public repository. Pages is already configured before this push, so the first workflow can deploy successfully.
 
 - [ ] **Step 4: Verify the remote deployment**
 
