@@ -8,19 +8,14 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: true
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     env:
-      QUARTZ_BASE_URL: ${{ format('{0}.github.io/{1}', github.repository_owner, github.event.repository.name) }}
-      QUARTZ_BASE_DIR: ${{ format('/{0}', github.event.repository.name) }}
+      PAGES_REPO: ivanwuzy/aiinfra-wiki-pages
+      QUARTZ_BASE_URL: ivanwuzy.github.io/aiinfra-wiki-pages
+      QUARTZ_BASE_DIR: /aiinfra-wiki-pages
     steps:
       - uses: actions/checkout@v6
         with:
@@ -51,18 +46,12 @@ jobs:
       - name: Verify built artifact
         working-directory: quartz
         run: npm run verify:public
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy to public Pages repository
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: quartz/public
-
-  deploy:
-    needs: build
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          personal_token: ${{ secrets.PAGES_DEPLOY_TOKEN }}
+          external_repository: ${{ env.PAGES_REPO }}
+          publish_branch: main
+          publish_dir: quartz/public
+          force_orphan: true
+          commit_message: "deploy: ${{ github.sha }}"

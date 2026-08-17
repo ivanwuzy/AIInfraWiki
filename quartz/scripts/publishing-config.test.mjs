@@ -26,18 +26,18 @@ test("enables the agreed standard Quartz features", async () => {
   }
 })
 
-test("deploys only the verified Quartz public directory to GitHub Pages", async () => {
+test("deploys built artifact to a separate public GitHub Pages repository", async () => {
   const workflowPath = path.resolve(quartzRoot, "..", ".github", "workflows", "deploy-pages.yml")
   const workflow = await readFile(workflowPath, "utf8")
   assert.match(workflow, /branches:\s*\n\s*- main/)
   assert.match(workflow, /workflow_dispatch:/)
-  assert.match(workflow, /pages: write/)
-  assert.match(workflow, /id-token: write/)
   assert.match(workflow, /npm run test:publishing/)
   assert.match(workflow, /npm run sync:content/)
   assert.match(workflow, /npm run configure:pages -- --base-url/)
   assert.match(workflow, /npx quartz build --baseDir/)
   assert.match(workflow, /npm run verify:public/)
-  assert.match(workflow, /path: quartz\/public/)
-  assert.doesNotMatch(workflow, /path:\s*\./)
+  assert.match(workflow, /peaceiris\/actions-gh-pages@v4/)
+  assert.match(workflow, /external_repository:/)
+  assert.match(workflow, /publish_dir: quartz\/public/)
+  assert.match(workflow, /PAGES_DEPLOY_TOKEN/)
 })
