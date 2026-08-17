@@ -29,6 +29,13 @@ test("enables the agreed standard Quartz features", async () => {
   }
 })
 
+test("preserves explicit relative links for the public knowledge graph", async () => {
+  const config = YAML.parse(await readFile(path.join(quartzRoot, "quartz.config.yaml"), "utf8"))
+  const crawlLinks = config.plugins.find((plugin) => plugin.source === "@quartz-community/crawl-links")
+
+  assert.equal(crawlLinks?.options?.markdownLinkResolution, "relative")
+})
+
 test("deploys the complete generated site from AIInfraWiki through GitHub Pages", async () => {
   const workflowPath = path.resolve(quartzRoot, "..", ".github", "workflows", "deploy-pages.yml")
   const workflow = await readFile(workflowPath, "utf8")
