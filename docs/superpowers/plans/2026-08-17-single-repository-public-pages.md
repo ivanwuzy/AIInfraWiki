@@ -65,13 +65,32 @@ git commit -m "test: require same-repository Pages deployment"
 
 **Files:**
 - Modify: `.github/workflows/deploy-pages.yml`
+- Modify: `quartz/quartz/util/glob.ts`
+- Modify: `quartz/quartz/build.ts`
+- Create: `quartz/quartz/util/glob.test.ts`
 - Test: `quartz/scripts/publishing-config.test.mjs`
 
 **Interfaces:**
 - Consumes: `quartz/public` produced by `npm run sync:content` and Quartz.
 - Produces: a Pages artifact and Pages deployment for `ivanwuzy/AIInfraWiki`.
 
-- [ ] **Step 1: Set workflow-level permissions and concurrency**
+- [ ] **Step 1: Write the failing content-discovery test**
+
+Create `quartz/quartz/util/glob.test.ts` with a temporary directory containing `.gitignore` with `content`, plus `content/index.md`. Assert that `glob("**/*.*", temporaryDirectory, [])` returns `["content/index.md"]`.
+
+Run: `cd quartz && npx tsx --test quartz/util/glob.test.ts`
+
+Expected: FAIL because `glob()` currently passes `gitignore: true` to `globby`.
+
+- [ ] **Step 2: Make generated content discoverable without making it Git-tracked**
+
+In `quartz/quartz/util/glob.ts`, replace `gitignore: true` with `gitignore: false`. In `quartz/quartz/build.ts`, remove `isGitIgnored` from the `globby` import, remove the `gitIgnoredMatcher` initialization, and remove the watcher branch that ignores paths matching that matcher. Keep the existing `.git/` and `cfg.configuration.ignorePatterns` checks.
+
+Run: `cd quartz && npx tsx --test quartz/util/glob.test.ts`
+
+Expected: PASS. The generated `quartz/content/` directory remains ignored by Git through `quartz/.gitignore`, but Quartz scanning and local watch mode now both use its explicit publish ignore rules rather than Git's tracking rules.
+
+- [ ] **Step 3: Set workflow-level permissions and concurrency**
 
 ```yaml
 permissions:
@@ -84,7 +103,7 @@ concurrency:
   cancel-in-progress: false
 ```
 
-- [ ] **Step 2: Retain build steps with same-repository URL settings**
+- [ ] **Step 4: Retain build steps with same-repository URL settings**
 
 ```yaml
 env:
@@ -116,7 +135,7 @@ Add a `deploy` job:
         uses: actions/deploy-pages@v4
 ```
 
-- [ ] **Step 3: Verify green and build the public artifact**
+- [ ] **Step 5: Verify green and build the public artifact**
 
 ```bash
 cd quartz
@@ -133,10 +152,10 @@ test ! -e public/local_research
 
 Expected: all tests pass; wiki and raw output exist; no local research output exists.
 
-- [ ] **Step 4: Commit implementation and the Quartz theme dependency files**
+- [ ] **Step 6: Commit implementation and the Quartz theme dependency files**
 
 ```bash
-git add .github/workflows/deploy-pages.yml quartz/package.json quartz/package-lock.json
+git add .github/workflows/deploy-pages.yml quartz/package.json quartz/package-lock.json quartz/quartz/util/glob.ts quartz/quartz/util/glob.test.ts quartz/quartz/build.ts
 git commit -m "ci: deploy AIInfraWiki through GitHub Pages"
 ```
 
