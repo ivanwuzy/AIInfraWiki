@@ -2555,3 +2555,13 @@
 - Raw: raw/sources/2026-08-14-端侧训练芯片_横纵分析报告.md
 - Updated: 新建 wiki/technologies/端侧训练芯片（On-DeviceTraining）.md；更新 wiki/index.md technologies 段；更新 wiki/synthesis/训练芯片孵化证据与人才方向.md（方向D增加交叉引用）。
 - Summary: 新建技术页面，系统介绍端侧训练芯片的技术概念、五级成熟度光谱（L0–L5）、四条技术路线（反向传播压缩、神经形态、前向传播、存算一体）、竞争格局、产业窗口判断（2026–2028）及三个产业剧本（最可能：推理芯片+软件；最危险：NVIDIA Jetson率先实现；最乐观：神经形态创造独立品类）。文中提出"端侧训练不在任何主流边缘AI芯片的产品路线图上"的产业判断，并给出人才来源和孵化建议。
+
+## [2026-08-17] ingest | SkyPilot
+- Disposition: New
+- Raw: raw/sources/2026-08-17-skypilot-funding-and-platform.md
+- Updated: 新建 SkyPilot；更新 4.4 多来源算力资源池化与控制面、4.1 跨厂商训推算力调度平台
+- Classification: 主类型 4.4 多来源算力资源池化与控制面（中高置信），次类型 4.1 跨厂商训推算力调度平台（中等置信）。UC Berkeley Sky Computing Lab 谱系，Ion Stoica/Scott Shenker 联合创始人；开源 SkyPilot + 商业 SkyPilot Platform 以 BYOC 控制面统一 20+ 云/K8s/Slurm/本地 GPU，不卖 Token/API/GPU 实例。融资 over $20M（Lux 领投）与平台中立性、供应商名单、统一 SLA、经审计收入仍未闭环，须尽调。
+
+## [2026-08-19] lint | 445 issues found, 0 auto-fixed
+- 范围：SkyPilot 新增页及受影响的分类、综合页；6 个数字/编号候选均为分类标识，SkyPilot 页无无法回溯的承重事实。
+- 存量待处理：2 个存量页面未设 Raw 字段；437 个既有 raw/sources 文件未被引用。本次未自动改写事实或清理存量资料。
